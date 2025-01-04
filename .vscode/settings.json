@@ -1,8 +1,11 @@
 {
-  "editor.defaultFormatter": "JohnnyMorganz.luau-lsp",
+  "[luau]": {
+    "editor.defaultFormatter": "JohnnyMorganz.stylua"
+  },
   "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
   "luau-lsp.hover.enabled": true,
   "luau-lsp.sourcemap.enabled": true,
   "luau-lsp.diagnostics.strictDatamodelTypes": true,
   "luau-lsp.diagnostics.pullOnSave": true,
+  "discord.enabled": true
 }

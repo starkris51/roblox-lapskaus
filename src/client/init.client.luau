@@ -1,6 +1,14 @@
 --!strict
-local player: Player = game:GetService("Players").LocalPlayer;
+local player: Player = game:GetService("Players").LocalPlayer
 
-player.CharacterAdded:Connect(function(a0: Model)  
-    print(a0.Name)
-end)
+type PlayerData = {
+	Name: string,
+	Age: number,
+	IsAdmin: boolean,
+}
+
+local function onCharacterAdded(character: Model)
+	print(character.Name)
+end
+
+player.CharacterAdded:Connect(onCharacterAdded)
