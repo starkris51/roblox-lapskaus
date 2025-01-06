@@ -2,15 +2,12 @@
   "name": "Roblox_Lapskaus",
   "tree": {
     "$className": "DataModel",
-
     "ReplicatedStorage": {
       "$path": "src/ReplicatedStorage"
     },
-
     "ServerScriptService": {
       "$path": "src/ServerScriptService"
     },
-
     "StarterPlayer": {
       "StarterCharacterScripts": {
         "$path": "src/StarterPlayer/StarterCharacterScripts"
@@ -19,7 +16,6 @@
         "$path": "src/StarterPlayer/StarterPlayerScripts"
       }
     },
-
     "Workspace": {
       "$properties": {
         "FilteringEnabled": true
@@ -28,16 +24,32 @@
         "$className": "Part",
         "$properties": {
           "Anchored": true,
-          "Color": [0.38823, 0.37254, 0.38823],
+          "Color": [
+            0.38823,
+            0.37254,
+            0.38823
+          ],
           "Locked": true,
-          "Position": [0, -10, 0],
-          "Size": [512, 20, 512]
+          "Position": [
+            0,
+            -10,
+            0
+          ],
+          "Size": [
+            512,
+            20,
+            512
+          ]
         }
       }
     },
     "Lighting": {
       "$properties": {
-        "Ambient": [0, 0, 0],
+        "Ambient": [
+          0,
+          0,
+          0
+        ],
         "Brightness": 2,
         "GlobalShadows": true,
         "Outlines": false,
@@ -48,6 +60,9 @@
       "$properties": {
         "RespectFilteringEnabled": true
       }
+    },
+    "PhysicsService": {
+      "$path": "src/PhysicsService/collisionGroups.json"
     }
   }
 }
