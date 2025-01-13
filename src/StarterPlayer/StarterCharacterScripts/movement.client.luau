@@ -5,11 +5,11 @@ local Players: Players = game:GetService("Players")
 local player: Player = Players.LocalPlayer :: Player
 local character: Model = player.Character or player.CharacterAdded:Wait()
 
-local humanoid: Humanoid = character:WaitForChild("Humanoid") :: Humanoid
-local root: Part = character:WaitForChild("HumanoidRootPart") :: Part
-local rootAttachment: Attachment = root:WaitForChild("RootAttachment") :: Attachment
+local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+local root = character:WaitForChild("HumanoidRootPart") :: Part
+local rootAttachment = root:WaitForChild("RootAttachment") :: Attachment
 
-local linearVelocity: LinearVelocity = Instance.new("LinearVelocity", root) :: LinearVelocity
+local linearVelocity = Instance.new("LinearVelocity", root) :: LinearVelocity
 
 linearVelocity.Attachment0 = rootAttachment
 linearVelocity.RelativeTo = Enum.ActuatorRelativeTo.World
