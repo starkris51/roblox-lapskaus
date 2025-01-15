@@ -1,11 +1,11 @@
 --!strict
-type WeaponProperties = {
+export type WeaponProperties = {
 	name: string,
 	model: Model,
 	powerups: { [string]: boolean },
 }
 
-type WeaponImpl = {
+export type WeaponImpl = {
 	__index: WeaponImpl,
 	new: (name: string, model: Model) -> Weapon,
 	fire: (self: Weapon) -> (),

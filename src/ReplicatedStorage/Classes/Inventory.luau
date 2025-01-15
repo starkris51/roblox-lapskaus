@@ -1,5 +1,5 @@
 --!strict
-local Types = require(game.ReplicatedStorage.Modules.Weapon)
+local Types = require(game.ReplicatedStorage.Classes.Weapon)
 
 type Weapon = Types.Weapon
 

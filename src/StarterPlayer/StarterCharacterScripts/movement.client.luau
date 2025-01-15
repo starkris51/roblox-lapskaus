@@ -6,8 +6,8 @@ local player: Player = Players.LocalPlayer :: Player
 local character: Model = player.Character or player.CharacterAdded:Wait()
 
 local humanoid = character:WaitForChild("Humanoid") :: Humanoid
-local root = character:WaitForChild("HumanoidRootPart") :: Part
-local rootAttachment = root:WaitForChild("RootAttachment") :: Attachment
+local root: Part = character:WaitForChild("HumanoidRootPart") :: Part
+local rootAttachment: Attachment = root:WaitForChild("RootAttachment") :: Attachment
 
 local linearVelocity = Instance.new("LinearVelocity", root) :: LinearVelocity
 
