@@ -61,9 +61,6 @@
       "$properties": {
         "RespectFilteringEnabled": true
       }
-    },
-    "PhysicsService": {
-      "$path": "src/PhysicsService/collisionGroups.json"
     }
   }
 }
