@@ -3,7 +3,7 @@ local ReplicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage"
 local Workspace: Workspace = game:GetService("Workspace")
 local Players: Players = game:GetService("Players")
 local UserInputService: UserInputService = game:GetService("UserInputService")
-local MovementConfig = require(ReplicatedStorage.Config.MovementConfig)
+local MovementConfig = require(game.ReplicatedStorage.Config.MovementConfig)
 
 export type PlayerControllerProperties = {
 	--PlayerModel
@@ -76,8 +76,6 @@ function PlayerController:updateMovement(dt: number)
 
 	self.linearVelocity.PlaneVelocity += deltaVelocity * accelerationRate * dt
 end
-
-function PlayerController:equipWeapon() end
 
 function PlayerController:update(dt: number)
 	self:updateMovement(dt)
