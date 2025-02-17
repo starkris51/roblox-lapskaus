@@ -49,7 +49,7 @@ local function captureLapskaus(player: Player, team: string)
 	return false
 end
 
-local function takeLapskaus(player: Player, team: string)
+local function takeLapskaus(player: Player, team: string): boolean
 	local metadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
 
 	if metadata.currentlyHoldingBlue ~= nil and metadata.currentlyHoldingRed ~= nil then
