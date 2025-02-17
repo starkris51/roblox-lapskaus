@@ -17,11 +17,9 @@ local function fire()
 	local humanoidRootPart: BasePart = character:FindFirstChild("HumanoidRootPart") :: BasePart
 
 	local linearVel: LinearVelocity? = humanoidRootPart:FindFirstChildOfClass("LinearVelocity")
-	if linearVel and direction.Y > -0.7 then
+	if linearVel and direction.Y > -0.5 then
 		local horizontalDirection: Vector2 = -Vector2.new(direction.X, direction.Z).Unit
 		linearVel.PlaneVelocity = linearVel.PlaneVelocity + horizontalDirection * WeaponConfig.knockbackForce
-	else
-		humanoidRootPart:ApplyImpulse(-direction.Unit * WeaponConfig.knockbackForce * 2)
 	end
 
 	FireEvent:FireServer(origin, direction)

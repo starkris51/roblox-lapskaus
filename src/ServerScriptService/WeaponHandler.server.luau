@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local Debris = game:GetService("Debris")
 
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
 

@@ -4,6 +4,7 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local GivePlayerLapskaus: RemoteEvent = ReplicatedStorage.Events.GivePlayerLapskaus
 local MovementConfig = require(game.ReplicatedStorage.Config.MovementConfig)
 
 local player = Players.LocalPlayer :: Player
@@ -15,6 +16,7 @@ local camera = Workspace.CurrentCamera :: Camera
 
 local viewmodel: Model = ReplicatedStorage:FindFirstChild("viewmodel"):Clone() :: Model
 local humanoidRootPart: Part = viewmodel:FindFirstChild("HumanoidRootPart") :: Part
+local rightArm: Part = viewmodel:FindFirstChild("RightArm") :: Part
 viewmodel.Parent = Workspace
 
 local linearVelocity = Instance.new("LinearVelocity", root) :: LinearVelocity
@@ -25,7 +27,7 @@ linearVelocity.PrimaryTangentAxis = MovementConfig.PrimaryTangentAxis
 linearVelocity.SecondaryTangentAxis = MovementConfig.SecondaryTangentAxis
 linearVelocity.MaxForce = MovementConfig.MaxForce
 
-UserInputService.MouseIconEnabled = false
+UserInputService.MouseIcon = "rbxassetid://105533423449519"
 UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
 player.CameraMode = Enum.CameraMode.LockFirstPerson
 
@@ -54,5 +56,15 @@ function update(dt: number)
 	updateMovement(dt)
 	updateViewmodel(dt)
 end
+
+GivePlayerLapskaus.OnClientEvent:Connect(function(team: string)
+	if team == "Blue" then
+		rightArm.Color = Color3.fromRGB(0, 0, 255)
+	elseif team == "Red" then
+		rightArm.Color = Color3.fromRGB(255, 0, 0)
+	else
+		rightArm.Color = Color3.fromRGB(255, 255, 255)
+	end
+end)
 
 RunService.RenderStepped:Connect(update)
