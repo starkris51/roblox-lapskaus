@@ -1,10 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
+local ServerStorage = game:GetService("ServerStorage")
 
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
 
 local FireEvent: RemoteEvent = ReplicatedStorage.Events.FireWeapon :: RemoteEvent
+local RequestKill: BindableEvent = ServerStorage.ServerEvents.RequestKill :: BindableEvent
 
 local function createParticle(origin: Vector3, direction: Vector3, distance: number)
 	-- Create a part to represent the ray particle
@@ -41,7 +43,7 @@ local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
 		local hitPlayer: Player? = Players:GetPlayerFromCharacter(hitCharacter)
 
 		if hitPlayer then
-			print("hit player")
+			RequestKill:Fire(player, hitPlayer)
 		end
 
 		length = (result.Position - origin).Magnitude

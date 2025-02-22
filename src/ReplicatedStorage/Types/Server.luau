@@ -1,6 +1,6 @@
 export type Gamemode = {
 	name: string,
-	metadata: { any? },
+	metadata: any?,
 	setup: () -> (),
 	setupPlayers: (players: { Player }) -> (),
 	handleKill: (killer: Player, victim: Player) -> (),

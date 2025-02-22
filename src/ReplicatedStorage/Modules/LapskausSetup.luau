@@ -23,7 +23,7 @@ end
 
 function lapskaus.setupLapskaus()
 	local flags: { Model } = CollectionService:GetTagged("Lapskaus") :: { Model }
-	for _, flag in ipairs(flags) do
+	for _, flag: Model in ipairs(flags) do
 		onFlagAdded(flag)
 	end
 end

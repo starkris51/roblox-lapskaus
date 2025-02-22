@@ -1,4 +1,6 @@
 local Types = require(game.ReplicatedStorage.Types.Server)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 
 export type DeathmatchMetadata = {
 	PlayerScore: { [string]: number },
@@ -19,13 +21,21 @@ function Deathmatch.setup()
 end
 
 function Deathmatch.setupPlayers(players: { Player })
+	local metadata: DeathmatchMetadata = Deathmatch.metadata :: DeathmatchMetadata
+
 	for _, player in ipairs(players) do
-		player.Team = nil
+		metadata.PlayerScore[player.Name] = 0
+		metadata.PlayerDeaths[player.Name] = 0
 	end
 end
 
 function Deathmatch.handleKill(killer: Player, victim: Player)
-	-- Add your kill handling logic here
+	local metadata: DeathmatchMetadata = Deathmatch.metadata :: DeathmatchMetadata
+
+	metadata.PlayerScore[killer.Name] += 1
+	metadata.PlayerDeaths[victim.Name] += 1
+
+	KillPlayer:FireClient(victim, killer)
 end
 
 return Deathmatch

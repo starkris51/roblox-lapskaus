@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Types = require(ReplicatedStorage.Types.Server)
+local ServerStorage = game:GetService("ServerStorage")
+local RequestKill: BindableEvent = ServerStorage.ServerEvents.RequestKill
 
 local Gamemodes = {
 	CaptureTheLapskaus = require(ReplicatedStorage.Modules.Gamemodes.CaptureTheLapskaus),
@@ -19,6 +21,9 @@ function gameModeManager.setupGamemode(gamemodeName: string)
 	if gamemode then
 		gamemode.setup()
 		gamemode.setupPlayers(Players:GetPlayers())
+		RequestKill.Event:Connect(function(killer: Player, victim: Player)
+			gamemode.handleKill(killer, victim)
+		end)
 	else
 		warn("Gamemode not found: " .. gamemodeName)
 	end

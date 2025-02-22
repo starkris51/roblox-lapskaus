@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RequestLapskaus: BindableFunction = ReplicatedStorage.BindebaleFunctions.RequestLapskaus
+local ServerStorage = game:GetService("ServerStorage")
+local RequestLapskaus: BindableFunction = ServerStorage.ServerEvents.RequestLapskaus
 local GivePlayerLapskaus: RemoteEvent = ReplicatedStorage.Events.GivePlayerLapskaus
+local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 local Types = require(ReplicatedStorage.Types.Server)
 
 local lapskaus = require(ReplicatedStorage.Modules.LapskausSetup)
@@ -12,7 +14,7 @@ export type CaptureTheLapskausMetadata = {
 	currentlyHoldingRed: Player?,
 }
 
-local CaptureTheLapskaus: Types.Gamemode = {
+local CaptureTheLapskaus = {
 	name = "CaptureTheLapskaus",
 	metadata = {
 		blueTeam = {},
@@ -23,7 +25,7 @@ local CaptureTheLapskaus: Types.Gamemode = {
 } :: Types.Gamemode
 
 local function getPlayerTeam(player: Player): string
-	local metadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
 	if metadata.blueTeam[player] then
 		return "Blue"
 	elseif metadata.redTeam[player] then
@@ -34,14 +36,16 @@ local function getPlayerTeam(player: Player): string
 end
 
 local function captureLapskaus(player: Player, team: string)
-	local metadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
 	if team == "Blue" then
 		if metadata.currentlyHoldingBlue == player then
+			print("Blue team captured the lapskaus")
 			metadata.currentlyHoldingBlue = nil
 			return true
 		end
 	elseif team == "Red" then
 		if metadata.currentlyHoldingRed == player then
+			print("Red team captured the lapskaus")
 			metadata.currentlyHoldingRed = nil
 			return true
 		end
@@ -50,13 +54,9 @@ local function captureLapskaus(player: Player, team: string)
 end
 
 local function takeLapskaus(player: Player, team: string): boolean
-	local metadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
 
 	if metadata.currentlyHoldingBlue ~= nil and metadata.currentlyHoldingRed ~= nil then
-		return false
-	end
-
-	if metadata.currentlyHoldingBlue == player or metadata.currentlyHoldingRed == player then
 		return false
 	end
 
@@ -85,7 +85,7 @@ function CaptureTheLapskaus.setup()
 end
 
 function CaptureTheLapskaus.setupPlayers(players: { Player })
-	local metadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
 	for _, player in ipairs(players) do
 		if math.random() > 0.5 then
 			metadata.blueTeam[player] = player
@@ -96,7 +96,17 @@ function CaptureTheLapskaus.setupPlayers(players: { Player })
 end
 
 function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
+	if killer == nil or victim == nil then
+		return
+	end
+
+	if getPlayerTeam(killer) == getPlayerTeam(victim) then
+		return
+	end
+
 	print("Killer: " .. killer.Name .. " Victim: " .. victim.Name)
+
+	KillPlayer:FireClient(victim, killer)
 end
 
 return CaptureTheLapskaus

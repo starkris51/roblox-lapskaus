@@ -1,15 +1,15 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RequestLapskaus = ReplicatedStorage.BindebaleFunctions.RequestLapskaus
+local ServerStorage = game:GetService("ServerStorage")
+local RequestLapskaus: BindableFunction = ServerStorage.ServerEvents.RequestLapskaus
 
-local model = script.Parent
-local surface = model.Surface :: Part
-local lapskaus = model.Lapskaus :: Part
-local team = model:GetAttribute("Team")
+local model: any = script.Parent
+local surface: Part = model.Surface :: Part
+local lapskaus: Part = model.Lapskaus :: Part
+local team: string = model:GetAttribute("Team") :: string
 
-local function onTouched(hit)
-	local player = game.Players:GetPlayerFromCharacter(hit.Parent)
+local function onTouched(hit: BasePart)
+	local player: Player? = game.Players:GetPlayerFromCharacter(hit.Parent :: Model)
 	if player then
-		local canTake = RequestLapskaus:Invoke(player, team) :: boolean
+		local canTake: boolean = RequestLapskaus:Invoke(player, team) :: boolean
 		if canTake then
 			lapskaus.Transparency = 100
 		end
