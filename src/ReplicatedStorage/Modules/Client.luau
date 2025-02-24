@@ -64,9 +64,9 @@ function ClientController.handleDeath()
 	movementEnabled = false
 	viewmodel.Parent = nil
 	camera.CameraType = Enum.CameraType.Scriptable
-	local thirdPersonOffset: CFrame = CFrame.new(0, 5, 12)
+	local thirdPersonOffset: CFrame = CFrame.new(0, 5, 24)
 	camera.CFrame = root.CFrame * thirdPersonOffset
-	UserInputService.MouseIcon = nil
+	--UserInputService.MouseIcon = nil
 end
 
 function ClientController.respawn()

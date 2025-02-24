@@ -6,6 +6,8 @@ local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 local Types = require(ReplicatedStorage.Types.Server)
 
 local lapskaus = require(ReplicatedStorage.Modules.LapskausSetup)
+local RespawnHandler = require(ReplicatedStorage.Modules.RespawnHandler)
+local PlayerKillHandler = require(ReplicatedStorage.Modules.PlayerKillHandler)
 
 export type CaptureTheLapskausMetadata = {
 	blueTeam: { [Player]: Player },
@@ -14,7 +16,7 @@ export type CaptureTheLapskausMetadata = {
 	currentlyHoldingRed: Player?,
 }
 
-local CaptureTheLapskaus = {
+local CaptureTheLapskaus: Types.Gamemode = {
 	name = "CaptureTheLapskaus",
 	metadata = {
 		blueTeam = {},
@@ -77,11 +79,10 @@ local function takeLapskaus(player: Player, team: string): boolean
 end
 
 function CaptureTheLapskaus.setup()
-	print("Setting up Capture The Flag")
-
 	RequestLapskaus.OnInvoke = takeLapskaus
 
 	lapskaus.setupLapskaus()
+	RespawnHandler.setupRespawnPoints()
 end
 
 function CaptureTheLapskaus.setupPlayers(players: { Player })
@@ -104,9 +105,13 @@ function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
 		return
 	end
 
-	print("Killer: " .. killer.Name .. " Victim: " .. victim.Name)
+	if PlayerKillHandler.isPlayerKilled(victim) then
+		return
+	end
 
+	PlayerKillHandler.addKilledPlayer(victim)
 	KillPlayer:FireClient(victim, killer)
+	RespawnHandler.startRespawnTimer(victim, 2)
 end
 
 return CaptureTheLapskaus

@@ -1,8 +1,9 @@
-local replicatedStorage = game:GetService("ReplicatedStorage")
-local gamemodeHandler = require(replicatedStorage.Modules.GamemodeHandler)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local gamemodeHandler = require(ReplicatedStorage.Modules.GamemodeHandler)
 
 repeat
 	wait()
-until #game.Players:GetPlayers() >= 1
+until #Players:GetPlayers() >= 1
 
 gamemodeHandler.setupGamemode("CaptureTheLapskaus")

@@ -1,0 +1,3 @@
+local GlobalEnums = {}
+
+return GlobalEnums

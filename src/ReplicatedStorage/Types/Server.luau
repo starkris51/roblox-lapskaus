@@ -1,11 +1,13 @@
+export type GamemodesName = "CaptureTheLapskaus" | "Deathmatch"
 export type Gamemode = {
-	name: string,
+	name: GamemodesName,
 	metadata: any?,
 	setup: () -> (),
 	setupPlayers: (players: { Player }) -> (),
 	handleKill: (killer: Player, victim: Player) -> (),
+	handleWin: (any) -> (),
 }
 
-local Types = {}
+local ServerTypes = {}
 
-return Types
+return ServerTypes

@@ -3,13 +3,22 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
 local Players = game:GetService("Players")
 
+local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
+local RespawnPlayers: RemoteEvent = ReplicatedStorage.Events.RespawnPlayer
+
 local player: Player = Players.LocalPlayer
 local character: Model = player.Character or player.CharacterAdded:Wait()
 local mouse: Mouse = player:GetMouse()
 
 local FireEvent: RemoteEvent = ReplicatedStorage.Events.FireWeapon :: RemoteEvent
 
+local canFire = true
+
 local function fire()
+	if not canFire then
+		return
+	end
+
 	local viewmodel: Model = workspace:FindFirstChild("viewmodel") :: Model
 	local arm: BasePart = viewmodel:FindFirstChild("RightArm") :: BasePart
 	local origin: Vector3 = arm.Position
@@ -33,4 +42,12 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: 
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
 		fire()
 	end
+end)
+
+KillPlayer.OnClientEvent:Connect(function()
+	canFire = false
+end)
+
+RespawnPlayers.OnClientEvent:Connect(function()
+	canFire = true
 end)
