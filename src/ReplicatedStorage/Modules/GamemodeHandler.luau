@@ -5,14 +5,14 @@ local RunService = game:GetService("RunService")
 local Types = require(ReplicatedStorage.Types.Server)
 local ServerStorage = game:GetService("ServerStorage")
 local RequestKill: BindableEvent = ServerStorage.ServerEvents.RequestKill
-local CaptureTheLapskaus = require(ReplicatedStorage.Modules.Gamemodes.CaptureTheLapskaus)
-local Deathmatch = require(ReplicatedStorage.Modules.Gamemodes.Deathmatch)
+-- local CaptureTheLapskaus = require(ReplicatedStorage.Modules.Gamemodes.CaptureTheLapskaus)
+-- local Deathmatch = require(ReplicatedStorage.Modules.Gamemodes.Deathmatch)
 
 local gameTimer: RBXScriptConnection
 
 local Gamemodes: { [Types.GamemodesName]: Types.Gamemode } = {
-	CaptureTheLapskaus = CaptureTheLapskaus,
-	Deathmatch = Deathmatch,
+	CaptureTheLapskaus = require(ReplicatedStorage.Modules.Gamemodes.CaptureTheLapskaus),
+	Deathmatch = require(ReplicatedStorage.Modules.Gamemodes.Deathmatch),
 }
 
 local gameModeManager = {
