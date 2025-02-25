@@ -1,18 +1,21 @@
+--!strict
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
 local RespawnPlayers: RemoteEvent = ReplicatedStorage.Events.RespawnPlayer
 
-local PlayerKillHandler = require(ReplicatedStorage.Modules.PlayerKillHandler)
+local PlayerKillHandler = require(ServerScriptService.Modules.PlayerKillHandler)
 --local Types = require(ReplicatedStorage.Types.Server)
 
 local RespawnHandler = {}
-local respawnTimers: { [Player]: number } = {}
+local respawnTimers: { [Player]: number | nil } = {}
 local connections: { [Player]: RBXScriptConnection } = {}
-local respawnPoints: { Part } = {}
+local respawnPoints: { Instance } = {}
 
 local function startTimer(player: Player, startTime: number, respawnTime: number)
-	if tick() - startTime >= respawnTime then
+	local currentTime: number = tick()
+	if currentTime - startTime >= respawnTime then
 		RespawnHandler.respawn(player)
 	end
 end
@@ -22,7 +25,7 @@ function RespawnHandler.startRespawnTimer(player: Player, respawnTime: number)
 		return
 	end
 
-	local startTime = tick()
+	local startTime: number = tick()
 	respawnTimers[player] = startTime
 
 	connections[player] = RunService.Heartbeat:Connect(function()
@@ -35,10 +38,10 @@ function RespawnHandler.isRespawning(player: Player): boolean
 end
 
 function RespawnHandler.setupRespawnPoints()
-	respawnPoints = CollectionService:GetTagged("RespawnPoint") :: { Part }
+	respawnPoints = CollectionService:GetTagged("RespawnPoint") :: { Instance }
 end
 
-function RespawnHandler.getRespawnPoint(): Part
+function RespawnHandler.getRespawnPoint(): Instance?
 	return respawnPoints[math.random(1, #respawnPoints)]
 end
 
@@ -61,14 +64,13 @@ function RespawnHandler.respawn(player: Player)
 			connections[player]:Disconnect()
 			connections[player] = nil
 		end
+	end
 
-		local respawnPoint = RespawnHandler.getRespawnPoint()
-		if respawnPoint then
-			local character = player.Character
-			if character then
-				character:SetPrimaryPartCFrame(respawnPoint.CFrame)
-			end
-		end
+	local respawnPoint: Instance? = RespawnHandler.getRespawnPoint()
+	local character: Model? = player.Character or player.CharacterAdded:Wait()
+
+	if respawnPoint and character and respawnPoint:IsA("Part") then
+		character:MoveTo(respawnPoint.Position + Vector3.new(0, 5, 0))
 	end
 end
 

@@ -1,5 +1,4 @@
 --!strict
-
 export type WeaponConfigType = {
 	reloadTime: number,
 	range: number,

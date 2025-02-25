@@ -1,6 +1,7 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+--!strict
 local Players = game:GetService("Players")
-local gamemodeHandler = require(ReplicatedStorage.Modules.GamemodeHandler)
+local ServerScriptService = game:GetService("ServerScriptService")
+local gamemodeHandler = require(ServerScriptService.Modules.GamemodeHandler)
 
 repeat
 	wait()

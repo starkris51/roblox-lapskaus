@@ -1,3 +1,5 @@
+--!strict
+local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local RequestLapskaus: BindableFunction = ServerStorage.ServerEvents.RequestLapskaus
 
@@ -7,7 +9,7 @@ local lapskaus: Part = model.Lapskaus :: Part
 local team: string = model:GetAttribute("Team") :: string
 
 local function onTouched(hit: BasePart)
-	local player: Player? = game.Players:GetPlayerFromCharacter(hit.Parent :: Model)
+	local player: Player? = Players:GetPlayerFromCharacter(hit.Parent :: Model)
 	if player then
 		local canTake: boolean = RequestLapskaus:Invoke(player, team) :: boolean
 		if canTake then

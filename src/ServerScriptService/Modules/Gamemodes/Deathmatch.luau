@@ -1,3 +1,4 @@
+--!strict
 local Types = require(game.ReplicatedStorage.Types.Server)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer

@@ -1,3 +1,4 @@
+--!strict
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
@@ -12,7 +13,7 @@ local mouse: Mouse = player:GetMouse()
 
 local FireEvent: RemoteEvent = ReplicatedStorage.Events.FireWeapon :: RemoteEvent
 
-local canFire = true
+local canFire: boolean = true
 
 local function fire()
 	if not canFire then

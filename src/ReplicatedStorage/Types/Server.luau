@@ -1,3 +1,4 @@
+--!strict
 export type GamemodesName = "CaptureTheLapskaus" | "Deathmatch"
 export type Gamemode = {
 	name: GamemodesName,

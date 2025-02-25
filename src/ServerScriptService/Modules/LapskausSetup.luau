@@ -1,20 +1,17 @@
+--!strict
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local lapskausScript = ReplicatedStorage.GameObjectsScripts.Lapskaus
+local lapskausScript: Script = ReplicatedStorage.GameObjectsScripts.Lapskaus
 
-export type Lapskaus = {
-	setupLapskaus: () -> (),
-}
+local lapskaus = {}
 
-local lapskaus: Lapskaus = {} :: Lapskaus
-
-local function addLapskausScript(model: Model, team: string)
+local function addLapskausScript(model: Instance, team: string)
 	local script = lapskausScript:Clone()
 	script:SetAttribute("Team", team)
 	script.Parent = model
 end
 
-local function onFlagAdded(flag)
+local function onFlagAdded(flag: Instance)
 	local team: string = flag:GetAttribute("Team") :: string
 	if team then
 		addLapskausScript(flag, team)
@@ -22,10 +19,10 @@ local function onFlagAdded(flag)
 end
 
 function lapskaus.setupLapskaus()
-	local flags: { Model } = CollectionService:GetTagged("Lapskaus") :: { Model }
-	for _, flag: Model in ipairs(flags) do
+	local flags: { Instance } = CollectionService:GetTagged("Lapskaus") :: { Instance }
+	for _, flag: Instance in ipairs(flags) do
 		onFlagAdded(flag)
 	end
 end
 
-return lapskaus :: Lapskaus
+return lapskaus

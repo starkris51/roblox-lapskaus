@@ -1,13 +1,15 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local RequestLapskaus: BindableFunction = ServerStorage.ServerEvents.RequestLapskaus
 local GivePlayerLapskaus: RemoteEvent = ReplicatedStorage.Events.GivePlayerLapskaus
 local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 local Types = require(ReplicatedStorage.Types.Server)
 
-local lapskaus = require(ReplicatedStorage.Modules.LapskausSetup)
-local RespawnHandler = require(ReplicatedStorage.Modules.RespawnHandler)
-local PlayerKillHandler = require(ReplicatedStorage.Modules.PlayerKillHandler)
+local lapskaus = require(ServerScriptService.Modules.LapskausSetup)
+local RespawnHandler = require(ServerScriptService.Modules.RespawnHandler)
+local PlayerKillHandler = require(ServerScriptService.Modules.PlayerKillHandler)
 
 export type CaptureTheLapskausMetadata = {
 	blueTeam: { [Player]: Player },
@@ -52,6 +54,7 @@ local function captureLapskaus(player: Player, team: string)
 			return true
 		end
 	end
+
 	return false
 end
 
@@ -78,26 +81,40 @@ local function takeLapskaus(player: Player, team: string): boolean
 	return true
 end
 
+local function countTeam(team: { [Player]: Player }): number
+	local count: number = 0
+	for _ in pairs(team) do
+		count = count + 1
+	end
+	return count
+end
+
 function CaptureTheLapskaus.setup()
 	RequestLapskaus.OnInvoke = takeLapskaus
-
 	lapskaus.setupLapskaus()
 	RespawnHandler.setupRespawnPoints()
 end
 
 function CaptureTheLapskaus.setupPlayers(players: { Player })
 	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+
+	metadata.blueTeam = {}
+	metadata.redTeam = {}
+
 	for _, player in ipairs(players) do
-		if math.random() > 0.5 then
+		if countTeam(metadata.blueTeam) <= countTeam(metadata.redTeam) then
 			metadata.blueTeam[player] = player
 		else
 			metadata.redTeam[player] = player
 		end
+		player.CharacterAdded:Connect(function()
+			RespawnHandler.respawn(player)
+		end)
 	end
 end
 
 function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
-	if killer == nil or victim == nil then
+	if not killer or not victim then
 		return
 	end
 

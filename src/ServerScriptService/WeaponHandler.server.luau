@@ -1,9 +1,12 @@
+--!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
+local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
+local PlayerKillHandler = require(ServerScriptService.Modules.PlayerKillHandler)
 
 local FireEvent: RemoteEvent = ReplicatedStorage.Events.FireWeapon :: RemoteEvent
 local RequestKill: BindableEvent = ServerStorage.ServerEvents.RequestKill :: BindableEvent
@@ -30,8 +33,16 @@ local function createParticle(origin: Vector3, direction: Vector3, distance: num
 end
 
 local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
+	if PlayerKillHandler.isPlayerKilled(player) then
+		return
+	end
+
 	local raycastParams = RaycastParams.new()
-	raycastParams.FilterDescendantsInstances = { player.Character }
+	if player.Character then
+		raycastParams.FilterDescendantsInstances = { player.Character }
+	else
+		raycastParams.FilterDescendantsInstances = {}
+	end
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 	local result: RaycastResult? = workspace:Raycast(origin, direction * WeaponConfig.range, raycastParams)
@@ -40,7 +51,7 @@ local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
 	if result then
 		local hitPart: Instance = result.Instance
 		local hitCharacter: Instance? = hitPart.Parent
-		local hitPlayer: Player? = Players:GetPlayerFromCharacter(hitCharacter)
+		local hitPlayer: Player? = Players:GetPlayerFromCharacter(hitCharacter :: Model)
 
 		if hitPlayer then
 			RequestKill:Fire(player, hitPlayer)
