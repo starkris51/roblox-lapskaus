@@ -1,4 +1,4 @@
-# Roblox_Lapskaus
+# Lapskaus (Roblox)
 
 Cube 2: Sauerbraten insta gamemode inspired roblox game
 
