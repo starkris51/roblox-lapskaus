@@ -7,50 +7,54 @@ local GivePlayerLapskaus: RemoteEvent = ReplicatedStorage.Events.GivePlayerLapsk
 local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 local Types = require(ReplicatedStorage.Types.Server)
 
-local lapskaus = require(ServerScriptService.Modules.LapskausSetup)
+local GameObjects = require(ServerScriptService.Modules.GameObjects)
 local RespawnHandler = require(ServerScriptService.Modules.RespawnHandler)
 local PlayerKillHandler = require(ServerScriptService.Modules.PlayerKillHandler)
+local TeamManager = require(ServerScriptService.Modules.TeamManager)
 
-export type CaptureTheLapskausMetadata = {
-	blueTeam: { [Player]: Player },
-	redTeam: { [Player]: Player },
-	currentlyHoldingBlue: Player?,
-	currentlyHoldingRed: Player?,
-}
+type lapskausTeam = "Blue" | "Red"
 
 local CaptureTheLapskaus: Types.Gamemode = {
 	name = "CaptureTheLapskaus",
 	metadata = {
-		blueTeam = {},
-		redTeam = {},
+		teams = {},
+		teamScores = {},
 		currentlyHoldingBlue = nil,
 		currentlyHoldingRed = nil,
-	} :: CaptureTheLapskausMetadata,
-} :: Types.Gamemode
+	},
+	setup = function() end,
+	setupPlayer = function() end,
+	handleKill = function() end,
+	handleWin = function() end,
+}
 
-local function getPlayerTeam(player: Player): string
-	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
-	if metadata.blueTeam[player] then
+local metadata: Types.CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: Types.CaptureTheLapskausMetadata
+
+local function getPlayerTeam(player: Player): lapskausTeam | nil
+	local teams: Types.Teams = metadata.teams
+
+	if teams["Blue"][player] then
 		return "Blue"
-	elseif metadata.redTeam[player] then
+	elseif teams["Red"][player] then
 		return "Red"
 	else
-		return "None"
+		return nil
 	end
 end
 
-local function captureLapskaus(player: Player, team: string)
-	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+local function captureLapskaus(player: Player, team: lapskausTeam)
 	if team == "Blue" then
 		if metadata.currentlyHoldingBlue == player then
 			print("Blue team captured the lapskaus")
 			metadata.currentlyHoldingBlue = nil
+			metadata.teamScores["Blue"] += 1
 			return true
 		end
 	elseif team == "Red" then
 		if metadata.currentlyHoldingRed == player then
 			print("Red team captured the lapskaus")
 			metadata.currentlyHoldingRed = nil
+			metadata.teamScores["Red"] += 1
 			return true
 		end
 	end
@@ -58,9 +62,7 @@ local function captureLapskaus(player: Player, team: string)
 	return false
 end
 
-local function takeLapskaus(player: Player, team: string): boolean
-	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
-
+local function takeLapskaus(player: Player, team: lapskausTeam): boolean
 	if metadata.currentlyHoldingBlue ~= nil and metadata.currentlyHoldingRed ~= nil then
 		return false
 	end
@@ -81,40 +83,25 @@ local function takeLapskaus(player: Player, team: string): boolean
 	return true
 end
 
-local function countTeam(team: { [Player]: Player }): number
-	local count: number = 0
-	for _ in pairs(team) do
-		count = count + 1
-	end
-	return count
-end
-
 function CaptureTheLapskaus.setup()
+	metadata.teams = TeamManager.initializeTeamData("Blue", "Red")
+	metadata.teamScores["Blue"] = 0
+	metadata.teamScores["Red"] = 0
+
 	RequestLapskaus.OnInvoke = takeLapskaus
-	lapskaus.setupLapskaus()
+	GameObjects.initializeGameObject("Lapskaus")
 	RespawnHandler.setupRespawnPoints()
 end
 
-function CaptureTheLapskaus.setupPlayers(players: { Player })
-	local metadata: CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: CaptureTheLapskausMetadata
+function CaptureTheLapskaus.setupPlayer(player: Player)
+	RespawnHandler.respawn(player)
 
-	metadata.blueTeam = {}
-	metadata.redTeam = {}
-
-	for _, player in ipairs(players) do
-		if countTeam(metadata.blueTeam) <= countTeam(metadata.redTeam) then
-			metadata.blueTeam[player] = player
-		else
-			metadata.redTeam[player] = player
-		end
-		player.CharacterAdded:Connect(function()
-			RespawnHandler.respawn(player)
-		end)
-	end
+	TeamManager.assignPlayerToTeam(metadata.teams, player)
 end
 
 function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
 	if not killer or not victim then
+		error("Killer or victim is nil", 0)
 		return
 	end
 
@@ -129,6 +116,22 @@ function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
 	PlayerKillHandler.addKilledPlayer(victim)
 	KillPlayer:FireClient(victim, killer)
 	RespawnHandler.startRespawnTimer(victim, 2)
+end
+
+function CaptureTheLapskaus.handleWin()
+	print(metadata.teamScores)
+
+	local highestScore: number = 0
+	local winner: string = ""
+
+	for team: string, score: number in pairs(metadata.teamScores) do
+		if score > highestScore then
+			highestScore = score
+			winner = team
+		end
+	end
+
+	print(winner .. " team won Capture the Lapskaus with " .. highestScore .. " captures!")
 end
 
 return CaptureTheLapskaus

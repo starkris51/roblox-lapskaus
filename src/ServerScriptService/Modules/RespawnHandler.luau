@@ -67,7 +67,11 @@ function RespawnHandler.respawn(player: Player)
 	end
 
 	local respawnPoint: Instance? = RespawnHandler.getRespawnPoint()
-	local character: Model? = player.Character or player.CharacterAdded:Wait()
+	local character: Model? = player.Character
+	if not character then
+		player:LoadCharacter()
+		character = player.Character or player.CharacterAdded:Wait()
+	end
 
 	if respawnPoint and character and respawnPoint:IsA("Part") then
 		character:MoveTo(respawnPoint.Position + Vector3.new(0, 5, 0))

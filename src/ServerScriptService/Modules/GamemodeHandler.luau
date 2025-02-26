@@ -48,11 +48,17 @@ function gameModeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 
 	gameModeManager.gamemode = gamemode
 	gamemode.setup()
-	gamemode.setupPlayers(Players:GetPlayers())
+
+	for _, player in ipairs(Players:GetPlayers()) do
+		gamemode.setupPlayer(player)
+	end
+
+	Players.PlayerAdded:Connect(gamemode.setupPlayer)
+
 	RequestKill.Event:Connect(gamemode.handleKill)
 
 	local startTime: number = tick()
-	local endTime: number = 120
+	local endTime: number = 10
 	gameTimer = RunService.Heartbeat:Connect(function()
 		updateTimer(startTime, endTime)
 	end)

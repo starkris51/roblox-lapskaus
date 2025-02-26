@@ -34,15 +34,18 @@ end
 
 local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
 	if PlayerKillHandler.isPlayerKilled(player) then
+		print("Player is dead")
 		return
 	end
 
 	local raycastParams = RaycastParams.new()
-	if player.Character then
-		raycastParams.FilterDescendantsInstances = { player.Character }
-	else
-		raycastParams.FilterDescendantsInstances = {}
+	local character: Model? = player.Character
+	if not character then
+		return
 	end
+
+	raycastParams.FilterDescendantsInstances = { character }
+
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 	local result: RaycastResult? = workspace:Raycast(origin, direction * WeaponConfig.range, raycastParams)

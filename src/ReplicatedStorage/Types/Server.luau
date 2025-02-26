@@ -1,13 +1,47 @@
 --!strict
-export type GamemodesName = "CaptureTheLapskaus" | "Deathmatch"
+
+-- Gamemode types
+
+export type GamemodesName = "CaptureTheLapskaus" | "Deathmatch" | "TeamDeathmatch"
+
+export type Team = { [Player]: Player }
+
+export type Teams = { [string]: Team }
+
+export type TeamStatistics = { [string]: number }
+
+export type PlayerStatistics = { [Player]: number }
+
+export type CaptureTheLapskausMetadata = {
+	teams: Teams,
+	teamScores: TeamStatistics,
+	currentlyHoldingBlue: Player?,
+	currentlyHoldingRed: Player?,
+}
+
+export type DeathmatchMetadata = {
+	playerScore: PlayerStatistics,
+	playerDeaths: PlayerStatistics,
+}
+
+export type TeamDeathmatchMetadata = {
+	teams: Teams,
+	teamScores: TeamStatistics,
+	teamDeaths: TeamStatistics,
+}
+
 export type Gamemode = {
 	name: GamemodesName,
-	metadata: any?,
+	metadata: DeathmatchMetadata | CaptureTheLapskausMetadata | TeamDeathmatchMetadata,
 	setup: () -> (),
-	setupPlayers: (players: { Player }) -> (),
+	setupPlayer: (player: Player) -> (),
 	handleKill: (killer: Player, victim: Player) -> (),
 	handleWin: (any) -> (),
 }
+
+-- Game Object types
+
+export type GameObjectTag = "Lapskaus"
 
 local ServerTypes = {}
 
