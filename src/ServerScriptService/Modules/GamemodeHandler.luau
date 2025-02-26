@@ -22,10 +22,13 @@ local Gamemodes: { [Types.GamemodesName]: Types.Gamemode } = {
 local gameModeManager: {
 	gamemode: Types.Gamemode?,
 	setupGamemode: (gamemodeName: Types.GamemodesName) -> (),
-} = {
-	gamemode = nil,
-	setupGamemode = function() end,
-}
+	cleanup: () -> (),
+} =
+	{
+		gamemode = nil,
+		setupGamemode = function() end,
+		cleanup = function() end,
+	}
 
 local function updateTimer(startTime: number, endTime: number)
 	local currentTime: number = tick()
@@ -34,6 +37,8 @@ local function updateTimer(startTime: number, endTime: number)
 		if gameModeManager.gamemode then
 			gameModeManager.gamemode.handleWin()
 		end
+		gameModeManager.cleanup()
+		return
 	end
 
 	local remainingTime: number = math.ceil(endTime - (currentTime - startTime))
@@ -58,9 +63,19 @@ function gameModeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 	RequestKill.Event:Connect(gamemode.handleKill)
 
 	local startTime: number = tick()
-	local endTime: number = 10
+	local endTime: number = 30 -- temporary value
 	gameTimer = RunService.Heartbeat:Connect(function()
 		updateTimer(startTime, endTime)
+	end)
+end
+
+function gameModeManager.cleanup()
+	if gameModeManager.gamemode then
+		gameModeManager.gamemode = nil
+	end
+
+	RequestKill.Event:Connect(function()
+		warn("RequestKill event was fired after cleanup")
 	end)
 end
 

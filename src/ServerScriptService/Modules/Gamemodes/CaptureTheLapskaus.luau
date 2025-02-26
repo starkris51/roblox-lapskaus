@@ -132,6 +132,13 @@ function CaptureTheLapskaus.handleWin()
 	end
 
 	print(winner .. " team won Capture the Lapskaus with " .. highestScore .. " captures!")
+
+	metadata = {
+		teams = {},
+		teamScores = {},
+		currentlyHoldingBlue = nil,
+		currentlyHoldingRed = nil,
+	} -- Reset metadata
 end
 
 return CaptureTheLapskaus
