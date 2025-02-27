@@ -5,18 +5,14 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Types = require(ReplicatedStorage.Types.Server)
-local ServerStorage = game:GetService("ServerStorage")
-local RequestKill: BindableEvent = ServerStorage.ServerEvents.RequestKill
+local RequestKill: BindableEvent = ServerScriptService.Events.RequestKill
 local TimerUpdated: UnreliableRemoteEvent = ReplicatedStorage.Events.TimerUpdated
-
--- local CaptureTheLapskaus = require(ReplicatedStorage.Modules.Gamemodes.CaptureTheLapskaus)
--- local Deathmatch = require(ReplicatedStorage.Modules.Gamemodes.Deathmatch)
 
 local gameTimer: RBXScriptConnection
 
 local Gamemodes: { [Types.GamemodesName]: Types.Gamemode } = {
-	CaptureTheLapskaus = require(ServerScriptService.Modules.Gamemodes.CaptureTheLapskaus),
-	Deathmatch = require(ServerScriptService.Modules.Gamemodes.Deathmatch),
+	CaptureTheLapskaus = require(ServerScriptService.Gameplay.Gamemodes.CaptureTheLapskaus),
+	Deathmatch = require(ServerScriptService.Gameplay.Gamemodes.Deathmatch),
 }
 
 local gameModeManager: {
@@ -70,10 +66,6 @@ function gameModeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 end
 
 function gameModeManager.cleanup()
-	if gameModeManager.gamemode then
-		gameModeManager.gamemode = nil
-	end
-
 	RequestKill.Event:Connect(function()
 		warn("RequestKill event was fired after cleanup")
 	end)

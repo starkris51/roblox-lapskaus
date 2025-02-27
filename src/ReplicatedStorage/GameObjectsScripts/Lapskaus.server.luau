@@ -1,7 +1,7 @@
 --!strict
 local Players = game:GetService("Players")
-local ServerStorage = game:GetService("ServerStorage")
-local RequestLapskaus: BindableFunction = ServerStorage.ServerEvents.RequestLapskaus
+local ServerScriptService = game:GetService("ServerScriptService")
+local RequestLapskaus: BindableFunction = ServerScriptService.Events.RequestLapskaus
 
 local model: any = script.Parent
 local surface: Part = model.Surface :: Part

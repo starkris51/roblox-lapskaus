@@ -5,8 +5,7 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RespawnPlayers: RemoteEvent = ReplicatedStorage.Events.RespawnPlayer
 
-local PlayerKillHandler = require(ServerScriptService.Modules.PlayerKillHandler)
---local Types = require(ReplicatedStorage.Types.Server)
+local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
 
 local RespawnHandler = {}
 local respawnTimers: { [Player]: number | nil } = {}
@@ -58,7 +57,7 @@ end
 function RespawnHandler.respawn(player: Player)
 	if respawnTimers[player] then
 		respawnTimers[player] = nil
-		PlayerKillHandler.removeKilledPlayer(player)
+		PlayerKill.removeKilledPlayer(player)
 		RespawnPlayers:FireClient(player)
 		if connections[player] then
 			connections[player]:Disconnect()

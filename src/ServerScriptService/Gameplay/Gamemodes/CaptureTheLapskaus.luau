@@ -1,16 +1,15 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Types = require(ReplicatedStorage.Types.Server)
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
-local RequestLapskaus: BindableFunction = ServerStorage.ServerEvents.RequestLapskaus
+local RequestLapskaus: BindableFunction = ServerScriptService.Events.RequestLapskaus
 local GivePlayerLapskaus: RemoteEvent = ReplicatedStorage.Events.GivePlayerLapskaus
 local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
-local Types = require(ReplicatedStorage.Types.Server)
 
-local GameObjects = require(ServerScriptService.Modules.GameObjects)
-local RespawnHandler = require(ServerScriptService.Modules.RespawnHandler)
-local PlayerKillHandler = require(ServerScriptService.Modules.PlayerKillHandler)
-local TeamManager = require(ServerScriptService.Modules.TeamManager)
+local GameObjects = require(ServerScriptService.Gameplay.Utils.GameObjects)
+local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
+local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local TeamManager = require(ServerScriptService.Gameplay.Utils.TeamManager)
 
 type lapskausTeam = "Blue" | "Red"
 
@@ -90,11 +89,11 @@ function CaptureTheLapskaus.setup()
 
 	RequestLapskaus.OnInvoke = takeLapskaus
 	GameObjects.initializeGameObject("Lapskaus")
-	RespawnHandler.setupRespawnPoints()
+	Respawn.setupRespawnPoints()
 end
 
 function CaptureTheLapskaus.setupPlayer(player: Player)
-	RespawnHandler.respawn(player)
+	Respawn.respawn(player)
 
 	TeamManager.assignPlayerToTeam(metadata.teams, player)
 end
@@ -109,13 +108,13 @@ function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
 		return
 	end
 
-	if PlayerKillHandler.isPlayerKilled(victim) then
+	if PlayerKill.isPlayerKilled(victim) then
 		return
 	end
 
-	PlayerKillHandler.addKilledPlayer(victim)
+	PlayerKill.addKilledPlayer(victim)
 	KillPlayer:FireClient(victim, killer)
-	RespawnHandler.startRespawnTimer(victim, 2)
+	Respawn.startRespawnTimer(victim, 2)
 end
 
 function CaptureTheLapskaus.handleWin()

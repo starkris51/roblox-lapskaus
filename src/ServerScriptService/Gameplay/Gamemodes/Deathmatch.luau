@@ -1,8 +1,11 @@
 --!strict
-local Types = require(game.ReplicatedStorage.Types.Server)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local Types = require(ReplicatedStorage.Types.Server)
+
 local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
-local RespawnHandler = require(game.ServerScriptService.Modules.RespawnHandler)
+
+local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 
 local Deathmatch: Types.Gamemode = {
 	name = "Deathmatch",
@@ -27,7 +30,7 @@ function Deathmatch.setupPlayer(player: Player)
 	metadata.playerScore[player] = 0
 	metadata.playerDeaths[player] = 0
 
-	RespawnHandler.respawn(player)
+	Respawn.respawn(player)
 end
 
 function Deathmatch.handleKill(killer: Player, victim: Player)
