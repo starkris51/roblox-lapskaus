@@ -39,6 +39,8 @@ export type Gamemode = {
 	handleWin: (any) -> (),
 }
 
+export type GameState = "Waiting" | "Playing" | "Ended"
+
 -- Game Object types
 
 export type GameObjectTag = "Lapskaus"

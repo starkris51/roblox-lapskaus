@@ -42,20 +42,15 @@ local function getPlayerTeam(player: Player): lapskausTeam | nil
 end
 
 local function captureLapskaus(player: Player, team: lapskausTeam)
-	if team == "Blue" then
-		if metadata.currentlyHoldingBlue == player then
-			print("Blue team captured the lapskaus")
-			metadata.currentlyHoldingBlue = nil
-			metadata.teamScores["Blue"] += 1
-			return true
-		end
-	elseif team == "Red" then
-		if metadata.currentlyHoldingRed == player then
-			print("Red team captured the lapskaus")
-			metadata.currentlyHoldingRed = nil
-			metadata.teamScores["Red"] += 1
-			return true
-		end
+	if team == "Blue" and metadata.currentlyHoldingBlue == player then
+		metadata.currentlyHoldingBlue = nil
+		metadata.teamScores["Blue"] += 1
+		return true
+	elseif team == "Red" and metadata.currentlyHoldingRed == player then
+		print("Red team captured the lapskaus")
+		metadata.currentlyHoldingRed = nil
+		metadata.teamScores["Red"] += 1
+		return true
 	end
 
 	return false
@@ -138,6 +133,8 @@ function CaptureTheLapskaus.handleWin()
 		currentlyHoldingBlue = nil,
 		currentlyHoldingRed = nil,
 	} -- Reset metadata
+
+	wait(2)
 end
 
 return CaptureTheLapskaus
