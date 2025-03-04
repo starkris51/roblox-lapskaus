@@ -12,11 +12,12 @@ export type TeamStatistics = { [string]: number }
 
 export type PlayerStatistics = { [Player]: number }
 
+export type HoldingFlags = { [string]: Player }
+
 export type CaptureTheLapskausMetadata = {
 	teams: Teams,
 	teamScores: TeamStatistics,
-	currentlyHoldingBlue: Player?,
-	currentlyHoldingRed: Player?,
+	holdingFlags: HoldingFlags,
 }
 
 export type DeathmatchMetadata = {

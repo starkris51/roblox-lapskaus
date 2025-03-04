@@ -7,6 +7,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Types = require(ReplicatedStorage.Types.Server)
 local RequestKill: BindableEvent = ServerScriptService.Events.RequestKill
 local TimerUpdated: UnreliableRemoteEvent = ReplicatedStorage.Events.TimerUpdated
+local GamemodeFinished: BindableEvent = ServerScriptService.Events.GamemodeFinished
 
 local gameTimer: RBXScriptConnection
 local requestKillConnection: RBXScriptConnection
@@ -15,6 +16,7 @@ local playerAddedConnection: RBXScriptConnection
 local Gamemodes: { [Types.GamemodesName]: Types.Gamemode } = {
 	CaptureTheLapskaus = require(ServerScriptService.Gameplay.Gamemodes.CaptureTheLapskaus),
 	Deathmatch = require(ServerScriptService.Gameplay.Gamemodes.Deathmatch),
+	TeamDeathmatch = require(ServerScriptService.Gameplay.Gamemodes.TeamDeathmatch),
 }
 
 local gamemodeManager: {
@@ -31,9 +33,13 @@ local gamemodeManager: {
 	}
 
 local function cleanup()
-	requestKillConnection:Disconnect()
-	playerAddedConnection:Disconnect()
-	gameTimer:Disconnect()
+	if requestKillConnection then
+		requestKillConnection:Disconnect()
+	end
+
+	if playerAddedConnection then
+		playerAddedConnection:Disconnect()
+	end
 
 	requestKillConnection = RequestKill.Event:Connect(function()
 		warn("RequestKill event was fired after cleanup")
@@ -45,21 +51,21 @@ end
 local function updateTimer(startTime: number, endTime: number)
 	local currentTime: number = tick()
 	if currentTime - startTime >= endTime then
-		local isGameWin = false
+		if gameTimer then
+			gameTimer:Disconnect()
+		end
+
 		if gamemodeManager.gamemode then
-			isGameWin = pcall(gamemodeManager.gamemode.handleWin)
+			local success: boolean, errorMessage: any = pcall(function()
+				gamemodeManager.gamemode:handleWin()
+				cleanup()
+			end)
+
+			if not success then
+				warn("Failed during gamemode completion: " .. errorMessage)
+			end
 		end
-
-		if not isGameWin then
-			error("Failed to handle win")
-		end
-
-		local isCleanup = pcall(cleanup)
-
-		if not isCleanup then
-			error("Failed to complete gamemode")
-		end
-
+		GamemodeFinished:Fire()
 		return
 	end
 
@@ -75,20 +81,20 @@ function gamemodeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 
 	gamemodeManager.gamemode = gamemode
 
-	local isSetup = pcall(gamemode.setup)
+	local isSetup: boolean = pcall(gamemode.setup)
 
 	if not isSetup then
 		error("Failed to setup gamemode")
 	end
 
 	for _, player in ipairs(Players:GetPlayers()) do
-		local isPlayerSetup = pcall(gamemode.setupPlayer, player)
+		local isPlayerSetup: boolean = pcall(gamemode.setupPlayer, player)
 		if not isPlayerSetup then
 			error("Failed to setup player: " .. player.Name)
 		end
 	end
 
-	local isPlayerAddedConfigured, errorPlayerAdded = pcall(function()
+	local isPlayerAddedConfigured: boolean, errorPlayerAdded: any = pcall(function()
 		playerAddedConnection = Players.PlayerAdded:Connect(gamemode.setupPlayer)
 	end)
 
@@ -96,7 +102,7 @@ function gamemodeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 		error("Failed to configure player added event" .. errorPlayerAdded)
 	end
 
-	local isRequestKillConnected, errorRequestKill = pcall(function()
+	local isRequestKillConnected: boolean, errorRequestKill: any = pcall(function()
 		requestKillConnection = RequestKill.Event:Connect(gamemode.handleKill)
 	end)
 
@@ -105,9 +111,9 @@ function gamemodeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 	end
 
 	local startTime: number = tick()
-	local endTime: number = 30 -- temporary value💀🤓
+	local endTime: number = 120 -- temporary value💀🤓
 
-	local isTimerConnected, errorTimer = pcall(function()
+	local isTimerConnected: boolean, errorTimer: string = pcall(function()
 		gameTimer = RunService.Heartbeat:Connect(function()
 			updateTimer(startTime, endTime)
 		end)

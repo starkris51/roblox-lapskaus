@@ -6,6 +6,7 @@ local Types = require(ReplicatedStorage.Types.Server)
 local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 
 local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
+local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
 
 local Deathmatch: Types.Gamemode = {
 	name = "Deathmatch",
@@ -22,8 +23,7 @@ local Deathmatch: Types.Gamemode = {
 local metadata: Types.DeathmatchMetadata = Deathmatch.metadata :: Types.DeathmatchMetadata
 
 function Deathmatch.setup()
-	print("Setting up Deathmatch")
-	-- Add your setup logic here
+	Respawn.setupRespawnPoints()
 end
 
 function Deathmatch.setupPlayer(player: Player)
@@ -34,10 +34,21 @@ function Deathmatch.setupPlayer(player: Player)
 end
 
 function Deathmatch.handleKill(killer: Player, victim: Player)
+	if not killer or not victim then
+		error("Killer or victim is nil", 0)
+		return
+	end
+
+	if PlayerKill.isPlayerKilled(victim) then
+		return
+	end
+
 	metadata.playerScore[killer] += 1
 	metadata.playerDeaths[victim] += 1
 
+	PlayerKill.addKilledPlayer(victim)
 	KillPlayer:FireClient(victim, killer)
+	Respawn.startRespawnTimer(victim, 2)
 end
 
 function Deathmatch.handleWin()

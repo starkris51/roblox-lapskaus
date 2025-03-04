@@ -7,6 +7,8 @@ local RunService = game:GetService("RunService")
 local GamemodeManager = require(ServerScriptService.Gameplay.GamemodeManager)
 local Types = require(ReplicatedStorage.Types.Server)
 
+local GamemodeFinished: BindableEvent = ServerScriptService.Events.GamemodeFinished
+
 Players.CharacterAutoLoads = false
 
 local gameState: Types.GameState
@@ -18,21 +20,19 @@ function serverGameLoopAsync()
 			wait(1)
 		until #Players:GetPlayers() >= 1
 
-		local isGamemodeSetup = pcall(function()
-			GamemodeManager.setupGamemode("CaptureTheLapskaus")
+		local isGamemodeSetup: boolean, message: any = pcall(function()
+			GamemodeManager.setupGamemode("TeamDeathmatch")
 		end)
 
 		if not isGamemodeSetup then
-			error("Failed to setup gamemode")
+			error("Failed to setup gamemode" .. message)
 		end
 
 		print("game started, gamemode setup")
 
 		gameState = "Playing"
 
-		repeat
-			wait(1)
-		until not GamemodeManager.isGamemodeActive()
+		GamemodeFinished.Event:Wait()
 
 		gameState = "Ended"
 
