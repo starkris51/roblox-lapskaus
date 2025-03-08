@@ -26,7 +26,3 @@ For more help, check out [the Rojo documentation](https://rojo.space/docs).1
 2. Install the Roblox Plugin [Link](https://create.roblox.com/store/asset/10913122509/Luau-Language-Server-Companion?externalSource=www&assetType=Plugin).1
 3. Run the Language Server in roblox studio
 4. good luck
-
-
-P.S.
-The is a pre pre pre alpha version.
