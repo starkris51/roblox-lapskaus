@@ -49,10 +49,9 @@ function TeamDeathmatch.setup()
 end
 
 function TeamDeathmatch.setupPlayer(player: Player)
-	Respawn.respawn(player)
 	TeamManager.assignPlayerToTeam(teams, player)
-
-	print(player.Name .. " has been assigned to a team")
+	Respawn.respawn(player)
+	TeamManager.highlightPlayer(player, "")
 end
 
 function TeamDeathmatch.handleKill(killer: Player, victim: Player)

@@ -69,7 +69,7 @@ function RespawnHandler.respawn(player: Player)
 	local character: Model? = player.Character
 	if not character then
 		player:LoadCharacter()
-		character = player.Character or player.CharacterAdded:Wait()
+		character = player.Character
 	end
 
 	if respawnPoint and character and respawnPoint:IsA("Part") then

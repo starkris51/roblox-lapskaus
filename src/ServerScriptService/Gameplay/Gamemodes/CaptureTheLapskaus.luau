@@ -104,8 +104,9 @@ function CaptureTheLapskaus.setup()
 end
 
 function CaptureTheLapskaus.setupPlayer(player: Player)
-	Respawn.respawn(player)
 	TeamManager.assignPlayerToTeam(teams, player)
+	Respawn.respawn(player)
+	TeamManager.highlightPlayer(player, getPlayerTeam(player) or "")
 end
 
 function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)

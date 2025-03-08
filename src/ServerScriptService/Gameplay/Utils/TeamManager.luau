@@ -31,8 +31,12 @@ local function getHighlightColor(team: string): Color3
 	end
 end
 
-local function highlightPlayer(player: Player, team: string)
-	local character: Model = player.Character or player.CharacterAdded:Wait()
+function TeamManager.highlightPlayer(player: Player, team: string)
+	local character: Model? = player.Character
+	if not character then
+		return
+	end
+
 	local highlight: Highlight = BaseTeamHightlight:Clone()
 	highlight.OutlineColor = getHighlightColor(team)
 	highlight.Parent = character
@@ -58,7 +62,6 @@ function TeamManager.assignPlayerToTeam(teams: Teams, player: Player)
 	end
 	if smallestTeamName then
 		teams[smallestTeamName][player] = player
-		highlightPlayer(player, smallestTeamName)
 	end
 end
 
