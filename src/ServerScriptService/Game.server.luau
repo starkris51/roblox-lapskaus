@@ -2,7 +2,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local RunService = game:GetService("RunService")
 
 local GamemodeManager = require(ServerScriptService.Gameplay.GamemodeManager)
 local Types = require(ReplicatedStorage.Types.Server)
@@ -21,7 +20,7 @@ function serverGameLoopAsync()
 		until #Players:GetPlayers() >= 1
 
 		local isGamemodeSetup: boolean, message: any = pcall(function()
-			GamemodeManager.setupGamemode("TeamDeathmatch")
+			GamemodeManager.setupGamemode("CaptureTheLapskaus")
 		end)
 
 		if not isGamemodeSetup then

@@ -9,33 +9,21 @@ local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
 
 local TeamManager = require(ServerScriptService.Gameplay.Utils.TeamManager)
+local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
-local TeamDeathmatch: Types.Gamemode = {
-	name = "TeamDeathmatch",
-	metadata = {
-		teams = {},
-		teamScores = {},
-		teamDeaths = {},
-	},
-	setup = function() end,
-	setupPlayer = function() end,
-	handleKill = function() end,
-	handleWin = function() end,
+local TeamDeathmatch: Types.Gamemode = {} :: Types.Gamemode
+
+TeamDeathmatch.name = "TeamDeathmatch"
+TeamDeathmatch.metadata = {
+	teams = {},
+	teamScores = {},
+	teamDeaths = {},
 }
 
 local metadata: Types.TeamDeathmatchMetadata = TeamDeathmatch.metadata :: Types.TeamDeathmatchMetadata
 local teams: Types.Teams = metadata.teams
 local teamScores: Types.TeamStatistics = metadata.teamScores
 local teamDeaths: Types.TeamStatistics = metadata.teamDeaths
-
-local function getPlayerTeam(player: Player): string | nil
-	for teamName: string, team in pairs(teams) do
-		if team[player] then
-			return teamName
-		end
-	end
-	return nil
-end
 
 function TeamDeathmatch.setup()
 	teams = TeamManager.initializeTeamData("test", "test2", "test3", "test4")
@@ -49,14 +37,22 @@ function TeamDeathmatch.setup()
 end
 
 function TeamDeathmatch.setupPlayer(player: Player)
+	WeaponStateManager.initPlayerReloadState(player)
+
 	TeamManager.assignPlayerToTeam(teams, player)
 	Respawn.respawn(player)
 	TeamManager.highlightPlayer(player, "")
 end
 
+function TeamDeathmatch.playerLeave(player: Player)
+	WeaponStateManager.cleanupPlayerReloadState(player)
+	TeamManager.removePlayerFromTeam(teams, player)
+	PlayerKill.removeKilledPlayer(player)
+end
+
 function TeamDeathmatch.handleKill(killer: Player, victim: Player)
-	local killerTeam: string | nil = getPlayerTeam(killer)
-	local victimTeam: string | nil = getPlayerTeam(victim)
+	local killerTeam: string | nil = TeamManager.getPlayerTeam(killer, teams)
+	local victimTeam: string | nil = TeamManager.getPlayerTeam(victim, teams)
 
 	if not killerTeam or not victimTeam then
 		return

@@ -12,25 +12,24 @@ local GameObjects = require(ServerScriptService.Gameplay.Utils.GameObjects)
 local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
 local TeamManager = require(ServerScriptService.Gameplay.Utils.TeamManager)
+local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
 type lapskausTeam = "Blue" | "Red"
+
+local droppedLapskaus: { [string]: { part: Part, team: string } } = {}
 
 local TEAMS = {
 	Blue = "Blue",
 	Red = "Red",
 }
 
-local CaptureTheLapskaus: Types.Gamemode = {
-	name = "CaptureTheLapskaus",
-	metadata = {
-		teams = {},
-		teamScores = {},
-		holdingFlags = {},
-	},
-	setup = function() end,
-	setupPlayer = function() end,
-	handleKill = function() end,
-	handleWin = function() end,
+local CaptureTheLapskaus: Types.Gamemode = {} :: Types.Gamemode
+
+CaptureTheLapskaus.name = "CaptureTheLapskaus"
+CaptureTheLapskaus.metadata = {
+	teams = {},
+	teamScores = {},
+	holdingFlags = {},
 }
 
 local metadata: Types.CaptureTheLapskausMetadata = CaptureTheLapskaus.metadata :: Types.CaptureTheLapskausMetadata
@@ -38,19 +37,67 @@ local teams: Types.Teams = metadata.teams
 local teamScores: Types.TeamStatistics = metadata.teamScores
 local holdingFlags: Types.HoldingFlags = metadata.holdingFlags
 
-local function getPlayerTeam(player: Player): lapskausTeam | nil
-	for teamName: string, team in pairs(teams) do
-		if team[player] then
-			return teamName :: lapskausTeam
+local function createDroppedLapskaus(team: string, position: Vector3)
+	if droppedLapskaus[team] and droppedLapskaus[team].part then
+		droppedLapskaus[team].part:Destroy()
+	end
+
+	local flag: Part = Instance.new("Part")
+	flag.Name = "DroppedLapskaus_" .. team
+	flag.Anchored = true
+	flag.CanCollide = false
+	flag.Size = Vector3.new(2, 2, 2)
+	flag.Position = position + Vector3.new(0, 2, 0)
+
+	if team == "Blue" then
+		flag.Color = Color3.fromRGB(0, 0, 255)
+	elseif team == "Red" then
+		flag.Color = Color3.fromRGB(255, 0, 0)
+	end
+
+	flag.Material = Enum.Material.Neon
+
+	local prompt: ProximityPrompt = Instance.new("ProximityPrompt")
+	prompt.ObjectText = team .. " Lapskaus"
+	prompt.ActionText = "Pick up"
+	prompt.RequiresLineOfSight = false
+	prompt.MaxActivationDistance = 8
+	prompt.Parent = flag
+
+	prompt.Triggered:Connect(function(player)
+		local success: any = RequestLapskaus:Invoke(player, team)
+		if success and droppedLapskaus[team] then
+			droppedLapskaus[team].part:Destroy()
+			droppedLapskaus[team] = nil
+		end
+	end)
+
+	droppedLapskaus[team] = { part = flag, team = team }
+	flag.Parent = workspace
+
+	return flag
+end
+
+local function cleanupDroppedLapskaus(team: string)
+	if droppedLapskaus[team] and droppedLapskaus[team].part then
+		droppedLapskaus[team].part:Destroy()
+		droppedLapskaus[team] = nil
+	end
+end
+
+local function cleanupAllDroppedLapskaus()
+	for team: string, data: { part: Part, team: string } in pairs(droppedLapskaus) do
+		if data.part then
+			data.part:Destroy()
 		end
 	end
-	return nil
+	droppedLapskaus = {}
 end
 
 local function captureLapskaus(player: Player, team: lapskausTeam)
 	if holdingFlags[team] == player then
 		holdingFlags[team] = nil
-		local playerTeam: lapskausTeam | nil = getPlayerTeam(player)
+		local playerTeam: lapskausTeam | nil = TeamManager.getPlayerTeam(player, teams) :: lapskausTeam | nil
 		if playerTeam then
 			teamScores[playerTeam] = (teamScores[playerTeam] or 0) + 1
 		end
@@ -59,12 +106,10 @@ local function captureLapskaus(player: Player, team: lapskausTeam)
 
 		return
 	end
-
-	print("Player is not holding the flag")
 end
 
 local function takeLapskaus(player: Player, team: lapskausTeam): boolean
-	local playerTeam: lapskausTeam | nil = getPlayerTeam(player)
+	local playerTeam: lapskausTeam | nil = TeamManager.getPlayerTeam(player, teams) :: lapskausTeam | nil
 	if not playerTeam then
 		return false
 	end
@@ -72,6 +117,12 @@ local function takeLapskaus(player: Player, team: lapskausTeam): boolean
 	local oppositeTeam: lapskausTeam = (playerTeam == TEAMS.Blue and TEAMS.Red or TEAMS.Blue) :: lapskausTeam
 
 	if playerTeam == team then
+		if droppedLapskaus[team] then
+			cleanupDroppedLapskaus(team)
+			ResetLapskaus:Fire(team)
+			return true
+		end
+
 		captureLapskaus(player, oppositeTeam)
 		return false
 	end
@@ -81,15 +132,21 @@ local function takeLapskaus(player: Player, team: lapskausTeam): boolean
 	end
 
 	local flagsHeld: number = 0
-	for _, _ in pairs(holdingFlags) do
-		flagsHeld += 1
+	for _, carrier: Player in pairs(holdingFlags) do
+		if carrier == player then
+			flagsHeld += 1
+		end
 	end
-	if flagsHeld >= 2 then
+
+	if flagsHeld >= 1 then
 		return false
 	end
 
 	holdingFlags[team] = player
 	GivePlayerLapskaus:FireClient(player, team)
+
+	cleanupDroppedLapskaus(team)
+
 	return true
 end
 
@@ -104,14 +161,21 @@ function CaptureTheLapskaus.setup()
 end
 
 function CaptureTheLapskaus.setupPlayer(player: Player)
+	WeaponStateManager.initPlayerReloadState(player)
 	TeamManager.assignPlayerToTeam(teams, player)
 	Respawn.respawn(player)
-	TeamManager.highlightPlayer(player, getPlayerTeam(player) or "")
+	TeamManager.highlightPlayer(player, TeamManager.getPlayerTeam(player, teams) or "")
+end
+
+function CaptureTheLapskaus.playerLeave(player: Player)
+	WeaponStateManager.cleanupPlayerReloadState(player)
+	PlayerKill.removeKilledPlayer(player)
+	TeamManager.removePlayerFromTeam(teams, player)
 end
 
 function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
-	local killerTeam: string | nil = getPlayerTeam(killer)
-	local victimTeam: string | nil = getPlayerTeam(victim)
+	local killerTeam: string | nil = TeamManager.getPlayerTeam(killer, teams)
+	local victimTeam: string | nil = TeamManager.getPlayerTeam(victim, teams)
 
 	if not killer or not victim then
 		error("Killer or victim is nil", 0)
@@ -128,9 +192,16 @@ function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
 
 	for team: string, carrier: Player in pairs(holdingFlags) do
 		if carrier == victim then
-			-- Tempoary fix for resetting lapskaus when player dies, will improve later and add drop lapskaus feature
+			local character: Model? = victim.Character
+			if character then
+				local rootPart: Instance? = character:FindFirstChild("HumanoidRootPart")
+				if rootPart and rootPart:IsA("BasePart") then
+					createDroppedLapskaus(team, rootPart.Position)
+				end
+			end
+
 			holdingFlags[team] = nil
-			ResetLapskaus:Fire(team)
+			GivePlayerLapskaus:FireClient(victim, "None")
 		end
 	end
 
@@ -151,6 +222,8 @@ function CaptureTheLapskaus.handleWin()
 	end
 
 	print(winner .. " team won Capture the Lapskaus with " .. highestScore .. " captures!")
+
+	cleanupAllDroppedLapskaus()
 
 	metadata = {
 		teams = {},

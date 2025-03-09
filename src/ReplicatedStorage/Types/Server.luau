@@ -36,6 +36,7 @@ export type Gamemode = {
 	metadata: DeathmatchMetadata | CaptureTheLapskausMetadata | TeamDeathmatchMetadata,
 	setup: () -> (),
 	setupPlayer: (player: Player) -> (),
+	playerLeave: (player: Player) -> (),
 	handleKill: (killer: Player, victim: Player) -> (),
 	handleWin: (any) -> (),
 }
@@ -44,7 +45,14 @@ export type GameState = "Waiting" | "Playing" | "Ended"
 
 -- Game Object types
 
-export type GameObjectTag = "Lapskaus"
+export type GameObjectTag = "Lapskaus" | "Powerup"
+
+export type PowerupName = "Speed" | "Jump" | "Extra Shot"
+
+export type Powerup = {
+	name: string,
+	duration: number,
+}
 
 local ServerTypes = {}
 

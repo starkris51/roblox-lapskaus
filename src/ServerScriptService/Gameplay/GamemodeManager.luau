@@ -5,6 +5,10 @@ local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local Types = require(ReplicatedStorage.Types.Server)
+local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
+local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
+
 local RequestKill: BindableEvent = ServerScriptService.Events.RequestKill
 local TimerUpdated: UnreliableRemoteEvent = ReplicatedStorage.Events.TimerUpdated
 local GamemodeFinished: BindableEvent = ServerScriptService.Events.GamemodeFinished
@@ -19,18 +23,15 @@ local Gamemodes: { [Types.GamemodesName]: Types.Gamemode } = {
 	TeamDeathmatch = require(ServerScriptService.Gameplay.Gamemodes.TeamDeathmatch),
 }
 
-local gamemodeManager: {
+type gamemodeManager = {
 	gamemode: Types.Gamemode?,
 	setupGamemode: (gamemodeName: Types.GamemodesName) -> (),
 	isGamemodeActive: () -> boolean,
-} =
-	{
-		gamemode = nil,
-		setupGamemode = function() end,
-		isGamemodeActive = function()
-			return false
-		end,
-	}
+}
+
+local gamemodeManager: gamemodeManager = {} :: gamemodeManager
+
+gamemodeManager.gamemode = nil
 
 local function cleanup()
 	if requestKillConnection then
@@ -44,6 +45,10 @@ local function cleanup()
 	requestKillConnection = RequestKill.Event:Connect(function()
 		warn("RequestKill event was fired after cleanup")
 	end)
+
+	PlayerKill.cleanup()
+	Respawn.cleanup()
+	WeaponStateManager.cleanup()
 
 	gamemodeManager.gamemode = nil
 end

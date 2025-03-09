@@ -7,10 +7,10 @@ local BaseTeamHightlight: Highlight = Instance.new("Highlight")
 BaseTeamHightlight.FillTransparency = 1
 BaseTeamHightlight.DepthMode = Enum.HighlightDepthMode.Occluded
 
-local TeamManager = {}
-
 type Team = Types.Team
 type Teams = Types.Teams
+
+local TeamManager = {}
 
 local function countTeam(team: Team): number
 	local count: number = 0
@@ -27,8 +27,17 @@ local function getHighlightColor(team: string): Color3
 		return Color3.fromRGB(255, 0, 0)
 	else
 		local random: Random = Random.new(os.clock())
-		return Color3.fromRGB(random:NextNumber(), random:NextNumber(), random:NextNumber())
+		return Color3.fromRGB(random:NextInteger(0, 255), random:NextInteger(0, 255), random:NextInteger(0, 255))
 	end
+end
+
+function TeamManager.getPlayerTeam(player: Player, teams: Teams): string | nil
+	for teamName: string, team in pairs(teams) do
+		if team[player] then
+			return teamName
+		end
+	end
+	return nil
 end
 
 function TeamManager.highlightPlayer(player: Player, team: string)
@@ -62,6 +71,12 @@ function TeamManager.assignPlayerToTeam(teams: Teams, player: Player)
 	end
 	if smallestTeamName then
 		teams[smallestTeamName][player] = player
+	end
+end
+
+function TeamManager.removePlayerFromTeam(teams: Teams, player: Player)
+	for teamName: string, team in pairs(teams) do
+		team[player] = nil
 	end
 end
 

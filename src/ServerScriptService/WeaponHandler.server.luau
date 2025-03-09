@@ -6,6 +6,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
 local FireEvent: RemoteEvent = ReplicatedStorage.Events.FireWeapon :: RemoteEvent
 local RequestKill: BindableEvent = ServerScriptService.Events.RequestKill :: BindableEvent
@@ -37,8 +38,7 @@ local function createParticle(origin: Vector3, direction: Vector3, distance: num
 end
 
 local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
-	if PlayerKill.isPlayerKilled(player) then
-		print("Player is dead")
+	if not WeaponStateManager.canPlayerFire(player) then
 		return
 	end
 
@@ -68,6 +68,12 @@ local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
 	end
 
 	createParticle(origin, direction, length)
+
+	if not WeaponStateManager.playerReloadState[player].hasPowerup then
+		WeaponStateManager.startReload(player)
+	else
+		WeaponStateManager.playerReloadState[player].lastFireTime = tick()
+	end
 end
 
 FireEvent.OnServerEvent:Connect(raycastFire)

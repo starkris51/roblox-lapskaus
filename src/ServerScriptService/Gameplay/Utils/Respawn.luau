@@ -55,6 +55,10 @@ function RespawnHandler.cleanup()
 end
 
 function RespawnHandler.respawn(player: Player)
+	if not player then
+		return
+	end
+
 	if respawnTimers[player] then
 		respawnTimers[player] = nil
 		PlayerKill.removeKilledPlayer(player)

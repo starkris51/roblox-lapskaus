@@ -1,18 +1,30 @@
 --!strict
-local PlayerKill = {}
+type PlayerKill = {
+	killedPlayers: { [number]: boolean },
+	isPlayerKilled: (player: Player) -> boolean,
+	addKilledPlayer: (player: Player) -> (),
+	removeKilledPlayer: (player: Player) -> (),
+	cleanup: () -> (),
+}
 
-local killedPlayers: { [Player]: boolean } = {}
+local PlayerKill: PlayerKill = {} :: PlayerKill
 
 function PlayerKill.isPlayerKilled(player)
-	return killedPlayers[player] or false
+	return PlayerKill.killedPlayers[player.UserId] or false
 end
 
 function PlayerKill.addKilledPlayer(player)
-	killedPlayers[player] = true
+	PlayerKill.killedPlayers[player.UserId] = true
 end
 
 function PlayerKill.removeKilledPlayer(player)
-	killedPlayers[player] = false
+	PlayerKill.killedPlayers[player.UserId] = false
 end
+
+function PlayerKill.cleanup()
+	PlayerKill.killedPlayers = {}
+end
+
+PlayerKill.killedPlayers = {}
 
 return PlayerKill

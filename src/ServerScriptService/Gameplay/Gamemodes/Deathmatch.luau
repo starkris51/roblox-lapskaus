@@ -7,17 +7,14 @@ local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 
 local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
-local Deathmatch: Types.Gamemode = {
-	name = "Deathmatch",
-	metadata = {
-		playerScore = {},
-		playerDeaths = {},
-	},
-	setup = function() end,
-	setupPlayer = function() end,
-	handleKill = function() end,
-	handleWin = function() end,
+local Deathmatch: Types.Gamemode = {} :: Types.Gamemode
+
+Deathmatch.name = "Deathmatch"
+Deathmatch.metadata = {
+	playerScore = {},
+	playerDeaths = {},
 }
 
 local metadata: Types.DeathmatchMetadata = Deathmatch.metadata :: Types.DeathmatchMetadata
@@ -27,10 +24,20 @@ function Deathmatch.setup()
 end
 
 function Deathmatch.setupPlayer(player: Player)
+	WeaponStateManager.initPlayerReloadState(player)
+
 	metadata.playerScore[player] = 0
 	metadata.playerDeaths[player] = 0
 
 	Respawn.respawn(player)
+end
+
+function Deathmatch.playerLeave(player: Player)
+	WeaponStateManager.cleanupPlayerReloadState(player)
+	PlayerKill.removeKilledPlayer(player)
+
+	metadata.playerScore[player] = nil
+	metadata.playerDeaths[player] = nil
 end
 
 function Deathmatch.handleKill(killer: Player, victim: Player)
