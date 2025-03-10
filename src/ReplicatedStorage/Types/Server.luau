@@ -45,14 +45,7 @@ export type GameState = "Waiting" | "Playing" | "Ended"
 
 -- Game Object types
 
-export type GameObjectTag = "Lapskaus" | "Powerup"
-
-export type PowerupName = "Speed" | "Jump" | "Extra Shot"
-
-export type Powerup = {
-	name: string,
-	duration: number,
-}
+export type GameObjectTag = "Lapskaus" | "Potion"
 
 local ServerTypes = {}
 
