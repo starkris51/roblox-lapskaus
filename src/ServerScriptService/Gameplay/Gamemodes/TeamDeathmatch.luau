@@ -7,6 +7,7 @@ local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 
 local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local PotionManager = require(ServerScriptService.Gameplay.Utils.PotionManager)
 
 local TeamManager = require(ServerScriptService.Gameplay.Utils.TeamManager)
 local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
@@ -42,12 +43,14 @@ function TeamDeathmatch.setupPlayer(player: Player)
 	TeamManager.assignPlayerToTeam(teams, player)
 	Respawn.respawn(player)
 	TeamManager.highlightPlayer(player, "")
+	PotionManager.initPlayer(player)
 end
 
 function TeamDeathmatch.playerLeave(player: Player)
 	WeaponStateManager.cleanupPlayerReloadState(player)
 	TeamManager.removePlayerFromTeam(teams, player)
 	PlayerKill.removeKilledPlayer(player)
+	PotionManager.cleanupPlayer(player)
 end
 
 function TeamDeathmatch.handleKill(killer: Player, victim: Player)

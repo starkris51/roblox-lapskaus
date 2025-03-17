@@ -4,8 +4,16 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
 
+type ReloadState = {
+	isReloading: boolean,
+	lastFireTime: number,
+	doubleShot: boolean,
+	shotsFired: number,
+	maxShots: number,
+}
+
 type WeaponStateManager = {
-	playerReloadState: { [Player]: { isReloading: boolean, lastFireTime: number, hasPowerup: boolean } },
+	playerReloadState: { [Player]: ReloadState },
 	initPlayerReloadState: (player: Player) -> (),
 	cleanupPlayerReloadState: (player: Player) -> (),
 	cleanup: () -> (),
@@ -26,7 +34,9 @@ function WeaponStateManager.initPlayerReloadState(player: Player)
 	WeaponStateManager.playerReloadState[player] = {
 		isReloading = false,
 		lastFireTime = 0,
-		hasPowerup = false,
+		doubleShot = false,
+		shotsFired = 0,
+		maxShots = 1,
 	}
 end
 

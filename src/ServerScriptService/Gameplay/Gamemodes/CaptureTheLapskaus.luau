@@ -11,6 +11,7 @@ local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 local GameObjects = require(ServerScriptService.Gameplay.Utils.GameObjects)
 local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local PotionManager = require(ServerScriptService.Gameplay.Utils.PotionManager)
 local TeamManager = require(ServerScriptService.Gameplay.Utils.TeamManager)
 local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
@@ -157,6 +158,7 @@ function CaptureTheLapskaus.setup()
 
 	RequestLapskaus.OnInvoke = takeLapskaus
 	GameObjects.initializeGameObject("Lapskaus")
+	GameObjects.initializeGameObject("Potion")
 	Respawn.setupRespawnPoints()
 end
 
@@ -165,12 +167,14 @@ function CaptureTheLapskaus.setupPlayer(player: Player)
 	TeamManager.assignPlayerToTeam(teams, player)
 	Respawn.respawn(player)
 	TeamManager.highlightPlayer(player, TeamManager.getPlayerTeam(player, teams) or "")
+	PotionManager.initPlayer(player)
 end
 
 function CaptureTheLapskaus.playerLeave(player: Player)
 	WeaponStateManager.cleanupPlayerReloadState(player)
 	PlayerKill.removeKilledPlayer(player)
 	TeamManager.removePlayerFromTeam(teams, player)
+	PotionManager.cleanupPlayer(player)
 end
 
 function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)

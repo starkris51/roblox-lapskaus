@@ -1,24 +1,23 @@
 --!strict
+export type PotionCategory = "Upgrade" | "Ability" | "Weapon"
 
-export type PotionType = "Speed" | "Jump" | "Double Shot"
+export type PotionName = "DoubleShot" | "Speed" | "Dash" | "Jump"
 
-export type SpeedData = {
-	speedMultiplier: number,
+export type PotionType = {
+	name: PotionName,
+	category: PotionCategory,
+	maxLevel: number,
+	onApply: (player: Player, level: number) -> (),
+	onRemove: (player: Player) -> (),
 }
 
-export type JumpData = {
-	jumpMultiplier: number,
-}
-
-export type ExtraShotData = {
-	shots: number,
-}
-
-export type PotionEffect = {
-	type: PotionType,
-	level: number,
-	data: SpeedData | JumpData | ExtraShotData,
-	persistThroughDeath: boolean,
+export type PlayerPotions = {
+	Upgrade: { [PotionName]: number },
+	Ability: { [PotionName]: number },
+	Weapon: { [PotionName]: number },
+	upgradeCount: number,
+	abilityCount: number,
+	weaponCount: number,
 }
 
 local Global = {}

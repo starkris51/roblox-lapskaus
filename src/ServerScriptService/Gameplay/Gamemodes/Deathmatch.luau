@@ -7,6 +7,7 @@ local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 
 local Respawn = require(ServerScriptService.Gameplay.Utils.Respawn)
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
+local PotionManager = require(ServerScriptService.Gameplay.Utils.PotionManager)
 local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
 local Deathmatch: Types.Gamemode = {} :: Types.Gamemode
@@ -25,6 +26,7 @@ end
 
 function Deathmatch.setupPlayer(player: Player)
 	WeaponStateManager.initPlayerReloadState(player)
+	PotionManager.initPlayer(player)
 
 	metadata.playerScore[player] = 0
 	metadata.playerDeaths[player] = 0
@@ -35,6 +37,7 @@ end
 function Deathmatch.playerLeave(player: Player)
 	WeaponStateManager.cleanupPlayerReloadState(player)
 	PlayerKill.removeKilledPlayer(player)
+	PotionManager.cleanupPlayer(player)
 
 	metadata.playerScore[player] = nil
 	metadata.playerDeaths[player] = nil

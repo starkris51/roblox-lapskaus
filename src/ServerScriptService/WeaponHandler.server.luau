@@ -69,11 +69,7 @@ local function raycastFire(player: Player, origin: Vector3, direction: Vector3)
 
 	createParticle(origin, direction, length)
 
-	if not WeaponStateManager.playerReloadState[player].hasPowerup then
-		WeaponStateManager.startReload(player)
-	else
-		WeaponStateManager.playerReloadState[player].lastFireTime = tick()
-	end
+	WeaponStateManager.startReload(player)
 end
 
 FireEvent.OnServerEvent:Connect(raycastFire)
