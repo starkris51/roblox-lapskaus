@@ -275,7 +275,7 @@ local function createServerEntry(serverInfo: ServerInfo)
 end
 
 -- Refresh the server list
-local function refreshServerList(ui)
+local function refreshServerList(ui: any)
 	-- Show loading indicator
 	ui.statusLabel.Text = "Loading servers..."
 
