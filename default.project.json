@@ -1,22 +1,22 @@
 {
-  "name": "Roblox_Lapskaus",
+  "name": "Lapskaus",
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "$path": "src/ReplicatedStorage"
+      "$path": "src/game/ReplicatedStorage"
     },
     "ServerStorage": {
-      "$path": "src/ServerStorage"
+      "$path": "src/game/ServerStorage"
     },
     "ServerScriptService": {
-      "$path": "src/ServerScriptService"
+      "$path": "src/game/ServerScriptService"
     },
     "StarterPlayer": {
       "StarterCharacterScripts": {
-        "$path": "src/StarterPlayer/StarterCharacterScripts"
+        "$path": "src/game/StarterPlayer/StarterCharacterScripts"
       },
       "StarterPlayerScripts": {
-        "$path": "src/StarterPlayer/StarterPlayerScripts"
+        "$path": "src/game/StarterPlayer/StarterPlayerScripts"
       }
     },
     "Workspace": {
@@ -28,16 +28,32 @@
         "$className": "Part",
         "$properties": {
           "Anchored": true,
-          "Color": [0.38823, 0.37254, 0.38823],
+          "Color": [
+            0.38823,
+            0.37254,
+            0.38823
+          ],
           "Locked": true,
-          "Position": [0, -10, 0],
-          "Size": [512, 20, 512]
+          "Position": [
+            0,
+            -10,
+            0
+          ],
+          "Size": [
+            512,
+            20,
+            512
+          ]
         }
       }
     },
     "Lighting": {
       "$properties": {
-        "Ambient": [0, 0, 0],
+        "Ambient": [
+          0,
+          0,
+          0
+        ],
         "Brightness": 2,
         "GlobalShadows": true,
         "Outlines": false,
