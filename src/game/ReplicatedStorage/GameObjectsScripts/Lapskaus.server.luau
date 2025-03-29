@@ -1,32 +1,158 @@
 --!strict
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RunService = game:GetService("RunService")
 local RequestLapskaus: BindableFunction = ServerScriptService.Events.RequestLapskaus
 local ResetLapskaus: BindableEvent = ServerScriptService.Events.ResetLapskaus
 
 local model: any = script.Parent
 local surface: Part = model.Surface :: Part
-local lapskaus: Part = model.Lapskaus :: Part
+local lapskaus: Model = model.Lapskaus :: Model
 local team: string = model:GetAttribute("Team") :: string
 
--- this shit will get replaced with a better area detection system, tempoary stuff💀
--- if u do open source stuff please make a replacement to this im lazy
+local AllignPositionSetup: AlignPosition = Instance.new("AlignPosition")
+AllignPositionSetup.Name = "LapskausAlignPosition"
+AllignPositionSetup.MaxForce = 10000
+AllignPositionSetup.Responsiveness = 100
+AllignPositionSetup.ApplyAtCenterOfMass = false
+AllignPositionSetup.RigidityEnabled = false
 
-local function onTouched(hit: BasePart)
-	local player: Player? = Players:GetPlayerFromCharacter(hit.Parent :: Model)
-	if player then
-		local canTake: boolean = RequestLapskaus:Invoke(player, team) :: boolean
-		if canTake then
-			lapskaus.Transparency = 100
+-- Configuration
+local CHECK_INTERVAL: number = 0.5
+local DETECTION_RANGE: number = 5
+local FOLLOW_HEIGHT_OFFSET: number = 10
+
+local playersInArea = {}
+local currentCarrier: Player? = nil
+local alignPosition: AlignPosition? = nil
+local lapskausPrimaryPart: MeshPart? = nil
+
+local function setupLapskausFollowing(player: Player)
+	if not player.Character then
+		warn("Player character not found")
+		return
+	end
+
+	lapskausPrimaryPart = lapskaus.PrimaryPart :: MeshPart?
+	if not lapskausPrimaryPart then
+		warn("Lapskaus primary part not found")
+		return
+	end
+
+	local lapskausAttachment: Attachment? = lapskausPrimaryPart:FindFirstChild("LapskausAttachment") :: Attachment
+	if not lapskausAttachment then
+		warn("LapskausAttachment not found in Lapskaus")
+		return
+	end
+
+	local humanoidRootPart: Part = player.Character:FindFirstChild("HumanoidRootPart") :: Part
+	if not humanoidRootPart then
+		warn("HumanoidRootPart not found in character")
+		return
+	end
+
+	local playerAttachment: Attachment = humanoidRootPart:FindFirstChild("PlayerLapskausAttachment") :: Attachment
+	if not playerAttachment then
+		warn("PlayerLapskausAttachment not found in HumanoidRootPart")
+		return
+	end
+
+	playerAttachment.Position = Vector3.new(0, FOLLOW_HEIGHT_OFFSET, 0)
+
+	alignPosition = AllignPositionSetup:Clone()
+	if not alignPosition then
+		warn("Failed to clone AlignPosition")
+		return
+	end
+
+	alignPosition.Attachment0 = lapskausAttachment
+	alignPosition.Attachment1 = playerAttachment
+	alignPosition.Parent = lapskausPrimaryPart
+
+	for _, part: Instance in pairs(lapskaus:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = false
+			part.Anchored = false
+		end
+	end
+
+	currentCarrier = player
+	lapskaus.Parent = workspace
+
+	return true
+end
+
+local function resetLapskaus()
+	if alignPosition then
+		alignPosition:Destroy()
+		alignPosition = nil
+	end
+
+	for _, part: Instance in pairs(lapskaus:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = true
+			part.Anchored = true
+		end
+	end
+
+	lapskaus:PivotTo(surface.CFrame)
+
+	lapskaus.Parent = model
+	currentCarrier = nil
+end
+
+local function isPlayerInArea(player: Player): boolean
+	local character: Model? = player.Character
+	if not character then
+		return false
+	end
+
+	local humanoidRootPart: BasePart? = character:FindFirstChild("HumanoidRootPart") :: BasePart
+	if not humanoidRootPart then
+		return false
+	end
+
+	local distance: number = (humanoidRootPart.Position - surface.Position).Magnitude
+	return distance <= DETECTION_RANGE
+end
+
+local function checkArea()
+	for _, player in ipairs(Players:GetPlayers()) do
+		local inArea: boolean = isPlayerInArea(player)
+
+		if inArea and not playersInArea[player] then
+			playersInArea[player] = true
+			local canTake: boolean = RequestLapskaus:Invoke(player, team) :: boolean
+			if canTake then
+				setupLapskausFollowing(player)
+			end
+		elseif not inArea and playersInArea[player] then
+			playersInArea[player] = nil
 		end
 	end
 end
 
-local function reset(requestTeam: string)
-	if team == requestTeam then
-		lapskaus.Transparency = 0
+local function onPlayerRemoving(player: Player)
+	playersInArea[player] = nil
+
+	if currentCarrier == player then
+		resetLapskaus()
 	end
 end
 
-surface.Touched:Connect(onTouched)
-ResetLapskaus.Event:Connect(reset)
+local areaCheckConnection: RBXScriptConnection = RunService.Heartbeat:Connect(function()
+	task.wait(CHECK_INTERVAL)
+	checkArea()
+end)
+
+Players.PlayerRemoving:Connect(onPlayerRemoving)
+ResetLapskaus.Event:Connect(function(resetTeam: string)
+	if resetTeam == team then
+		resetLapskaus()
+	end
+end)
+
+script.Destroying:Connect(function()
+	areaCheckConnection:Disconnect()
+	resetLapskaus()
+end)

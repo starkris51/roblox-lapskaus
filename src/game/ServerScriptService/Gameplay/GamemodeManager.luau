@@ -15,7 +15,10 @@ local GamemodeFinished: BindableEvent = ServerScriptService.Events.GamemodeFinis
 
 local gameTimer: RBXScriptConnection
 local requestKillConnection: RBXScriptConnection
-local playerAddedConnection: RBXScriptConnection
+local playerSetupConnection: RBXScriptConnection
+local playerGamemodeSetupConnection: RBXScriptConnection
+
+local GamemodeSetup: RemoteEvent = ReplicatedStorage.Events.GamemodeSetup
 
 local Gamemodes: { [Types.GamemodesName]: Types.Gamemode } = {
 	CaptureTheLapskaus = require(ServerScriptService.Gameplay.Gamemodes.CaptureTheLapskaus),
@@ -38,8 +41,12 @@ local function cleanup()
 		requestKillConnection:Disconnect()
 	end
 
-	if playerAddedConnection then
-		playerAddedConnection:Disconnect()
+	if playerSetupConnection then
+		playerSetupConnection:Disconnect()
+	end
+
+	if playerGamemodeSetupConnection then
+		playerGamemodeSetupConnection:Disconnect()
 	end
 
 	requestKillConnection = RequestKill.Event:Connect(function()
@@ -99,8 +106,13 @@ function gamemodeManager.setupGamemode(gamemodeName: Types.GamemodesName)
 		end
 	end
 
+	GamemodeSetup:FireAllClients(gamemodeName)
+
 	local isPlayerAddedConfigured: boolean, errorPlayerAdded: any = pcall(function()
-		playerAddedConnection = Players.PlayerAdded:Connect(gamemode.setupPlayer)
+		playerSetupConnection = Players.PlayerAdded:Connect(gamemode.setupPlayer)
+		playerGamemodeSetupConnection = Players.PlayerAdded:Connect(function(player: Player)
+			GamemodeSetup:FireClient(player, gamemodeName)
+		end)
 	end)
 
 	if not isPlayerAddedConfigured then

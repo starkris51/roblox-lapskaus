@@ -175,11 +175,11 @@ local function joinServer(player: Player, serverIdToJoin: string): (boolean, str
 end
 
 local function createGameServer(player: Player, serverName: string?, gamemode: string?): (boolean, string)
-	local newServerName = serverName or player.Name .. "'s Server"
-	local newGamemode = gamemode or "CaptureTheLapskaus"
+	local newServerName: string = serverName or player.Name .. "'s Server"
+	local newGamemode: string = gamemode or "CaptureTheLapskaus"
 
 	local teleportOptions = Instance.new("TeleportOptions")
-	local reservationId = HttpService:GenerateGUID(false)
+	local reservationId: string = HttpService:GenerateGUID(false)
 
 	local creationData = {
 		reservationId = reservationId,
@@ -190,7 +190,7 @@ local function createGameServer(player: Player, serverName: string?, gamemode: s
 		timestamp = os.time(),
 	}
 
-	local success, errorMsg = pcall(function()
+	local success: boolean, errorMsg: string = pcall(function()
 		teleportStore:SetAsync("create_" .. reservationId, creationData, { player.UserId })
 	end)
 
@@ -201,7 +201,7 @@ local function createGameServer(player: Player, serverName: string?, gamemode: s
 
 	teleportOptions:SetTeleportData(creationData)
 
-	local teleportSuccess, teleportResult = pcall(function()
+	local teleportSuccess: boolean, teleportResult: TeleportAsyncResult = pcall(function()
 		return TeleportService:TeleportAsync(GAME_PLACE_ID, { player }, teleportOptions)
 	end)
 

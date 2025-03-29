@@ -15,9 +15,12 @@ local PotionManager = require(ServerScriptService.Gameplay.Utils.PotionManager)
 local TeamManager = require(ServerScriptService.Gameplay.Utils.TeamManager)
 local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStateManager)
 
+local PlayerLapskausAttachment: Attachment = Instance.new("Attachment")
+PlayerLapskausAttachment.Name = "PlayerLapskausAttachment"
+
 type lapskausTeam = "Blue" | "Red"
 
-local droppedLapskaus: { [string]: { part: Part, team: string } } = {}
+local droppedLapskaus: { [string]: { lapskaus: Model, team: string } } = {}
 
 local TEAMS = {
 	Blue = "Blue",
@@ -39,58 +42,79 @@ local teamScores: Types.TeamStatistics = metadata.teamScores
 local holdingFlags: Types.HoldingFlags = metadata.holdingFlags
 
 local function createDroppedLapskaus(team: string, position: Vector3)
-	if droppedLapskaus[team] and droppedLapskaus[team].part then
-		droppedLapskaus[team].part:Destroy()
+	if droppedLapskaus[team] and droppedLapskaus[team].lapskaus then
+		droppedLapskaus[team].lapskaus:Destroy()
 	end
 
-	local flag: Part = Instance.new("Part")
-	flag.Name = "DroppedLapskaus_" .. team
-	flag.Anchored = true
-	flag.CanCollide = false
-	flag.Size = Vector3.new(2, 2, 2)
-	flag.Position = position + Vector3.new(0, 2, 0)
-
-	if team == "Blue" then
-		flag.Color = Color3.fromRGB(0, 0, 255)
-	elseif team == "Red" then
-		flag.Color = Color3.fromRGB(255, 0, 0)
+	local lapskausModel: Model = nil
+	for _, obj: Instance in pairs(workspace:GetChildren()) do
+		if obj:IsA("Model") and obj.Name == "Lapskaus" and obj:GetAttribute("Team") == team then
+			lapskausModel = obj
+			break
+		end
 	end
 
-	flag.Material = Enum.Material.Neon
+	if not lapskausModel then
+		warn("Could not find lapskaus model for team: " .. team)
+		return
+	end
+
+	local primaryPart: BasePart? = lapskausModel.PrimaryPart
+	if primaryPart then
+		local existingAlignPosition: AlignPosition? =
+			primaryPart:FindFirstChildOfClass("AlignPosition") :: AlignPosition
+		if existingAlignPosition then
+			existingAlignPosition:Destroy()
+		end
+	end
+
+	lapskausModel:PivotTo(CFrame.new(position + Vector3.new(0, 2, 0)))
+
+	for _, part: Instance in pairs(lapskausModel:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.CanCollide = true
+			part.Anchored = true
+		end
+	end
 
 	local prompt: ProximityPrompt = Instance.new("ProximityPrompt")
 	prompt.ObjectText = team .. " Lapskaus"
 	prompt.ActionText = "Pick up"
 	prompt.RequiresLineOfSight = false
 	prompt.MaxActivationDistance = 8
-	prompt.Parent = flag
+
+	if lapskausModel:IsA("Model") and lapskausModel.PrimaryPart then
+		prompt.Parent = lapskausModel.PrimaryPart
+	else
+		prompt.Parent = lapskausModel
+	end
 
 	prompt.Triggered:Connect(function(player)
 		local success: any = RequestLapskaus:Invoke(player, team)
 		if success and droppedLapskaus[team] then
-			droppedLapskaus[team].part:Destroy()
+			droppedLapskaus[team].lapskaus:Destroy()
 			droppedLapskaus[team] = nil
 		end
 	end)
 
-	droppedLapskaus[team] = { part = flag, team = team }
-	flag.Parent = workspace
+	droppedLapskaus[team] = { lapskaus = lapskausModel, team = team }
 
-	return flag
+	return lapskausModel
 end
 
 local function cleanupDroppedLapskaus(team: string)
-	if droppedLapskaus[team] and droppedLapskaus[team].part then
-		droppedLapskaus[team].part:Destroy()
+	if droppedLapskaus[team] and droppedLapskaus[team].lapskaus then
+		droppedLapskaus[team].lapskaus:Destroy()
 		droppedLapskaus[team] = nil
 	end
 end
 
 local function cleanupAllDroppedLapskaus()
-	for team: string, data: { part: Part, team: string } in pairs(droppedLapskaus) do
-		if data.part then
-			data.part:Destroy()
+	for team: string, data: { lapskaus: Model, team: string } in pairs(droppedLapskaus) do
+		if data.lapskaus then
+			data.lapskaus:Destroy()
 		end
+		droppedLapskaus[team] = nil
 	end
 	droppedLapskaus = {}
 end
@@ -168,6 +192,11 @@ function CaptureTheLapskaus.setupPlayer(player: Player)
 	Respawn.respawn(player)
 	TeamManager.highlightPlayer(player, TeamManager.getPlayerTeam(player, teams) or "")
 	PotionManager.initPlayer(player)
+
+	local playerLapskausAttachment: Attachment = PlayerLapskausAttachment:Clone()
+	if player.Character then
+		playerLapskausAttachment.Parent = player.Character:WaitForChild("HumanoidRootPart")
+	end
 end
 
 function CaptureTheLapskaus.playerLeave(player: Player)

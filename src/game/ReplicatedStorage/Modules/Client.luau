@@ -79,14 +79,4 @@ function ClientController.respawn()
 	UserInputService.MouseIcon = "rbxassetid://105533423449519"
 end
 
-function ClientController.captureLapskaus(team: string)
-	if team == "Blue" then
-		rightArm.Color = Color3.fromRGB(0, 0, 255)
-	elseif team == "Red" then
-		rightArm.Color = Color3.fromRGB(255, 0, 0)
-	else
-		rightArm.Color = Color3.fromRGB(255, 255, 255)
-	end
-end
-
 return ClientController
