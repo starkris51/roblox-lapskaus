@@ -7,8 +7,8 @@ local ResetLapskaus: BindableEvent = ServerScriptService.Events.ResetLapskaus
 
 local model: any = script.Parent
 local surface: Part = model.Surface :: Part
-local lapskaus: Model = model.Lapskaus :: Model
 local team: string = model:GetAttribute("Team") :: string
+local lapskaus: Model = model["Lapskaus" .. team] :: Model
 
 local AllignPositionSetup: AlignPosition = Instance.new("AlignPosition")
 AllignPositionSetup.Name = "LapskausAlignPosition"
@@ -18,9 +18,8 @@ AllignPositionSetup.ApplyAtCenterOfMass = false
 AllignPositionSetup.RigidityEnabled = false
 
 -- Configuration
-local CHECK_INTERVAL: number = 0.5
-local DETECTION_RANGE: number = 5
-local FOLLOW_HEIGHT_OFFSET: number = 10
+local DETECTION_RANGE: number = 7
+local FOLLOW_HEIGHT_OFFSET: number = 5
 
 local playersInArea = {}
 local currentCarrier: Player? = nil
@@ -33,7 +32,12 @@ local function setupLapskausFollowing(player: Player)
 		return
 	end
 
-	lapskausPrimaryPart = lapskaus.PrimaryPart :: MeshPart?
+	if not lapskaus.PrimaryPart then
+		warn("Lapskaus model does not have a PrimaryPart")
+		return
+	end
+
+	lapskausPrimaryPart = lapskaus.PrimaryPart :: MeshPart
 	if not lapskausPrimaryPart then
 		warn("Lapskaus primary part not found")
 		return
@@ -141,7 +145,6 @@ local function onPlayerRemoving(player: Player)
 end
 
 local areaCheckConnection: RBXScriptConnection = RunService.Heartbeat:Connect(function()
-	task.wait(CHECK_INTERVAL)
 	checkArea()
 end)
 

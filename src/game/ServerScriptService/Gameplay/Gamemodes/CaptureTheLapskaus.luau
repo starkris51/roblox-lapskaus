@@ -18,9 +18,16 @@ local WeaponStateManager = require(ServerScriptService.Gameplay.Utils.WeaponStat
 local PlayerLapskausAttachment: Attachment = Instance.new("Attachment")
 PlayerLapskausAttachment.Name = "PlayerLapskausAttachment"
 
+local DroppedLapskausLocation: Part = Instance.new("Part")
+DroppedLapskausLocation.Name = "DroppedLapskausLocation"
+DroppedLapskausLocation.Size = Vector3.new(1, 1, 1)
+DroppedLapskausLocation.Transparency = 1
+DroppedLapskausLocation.CanCollide = false
+DroppedLapskausLocation.Anchored = true
+
 type lapskausTeam = "Blue" | "Red"
 
-local droppedLapskaus: { [string]: { lapskaus: Model, team: string } } = {}
+local droppedLapskaus: { [string]: lapskausTeam } = {}
 
 local TEAMS = {
 	Blue = "Blue",
@@ -41,14 +48,10 @@ local teams: Types.Teams = metadata.teams
 local teamScores: Types.TeamStatistics = metadata.teamScores
 local holdingFlags: Types.HoldingFlags = metadata.holdingFlags
 
-local function createDroppedLapskaus(team: string, position: Vector3)
-	if droppedLapskaus[team] and droppedLapskaus[team].lapskaus then
-		droppedLapskaus[team].lapskaus:Destroy()
-	end
-
+local function createDroppedLapskaus(team: lapskausTeam, character: Model)
 	local lapskausModel: Model = nil
 	for _, obj: Instance in pairs(workspace:GetChildren()) do
-		if obj:IsA("Model") and obj.Name == "Lapskaus" and obj:GetAttribute("Team") == team then
+		if obj:IsA("Model") and obj.Name == "Lapskaus" .. team then
 			lapskausModel = obj
 			break
 		end
@@ -59,23 +62,38 @@ local function createDroppedLapskaus(team: string, position: Vector3)
 		return
 	end
 
-	local primaryPart: BasePart? = lapskausModel.PrimaryPart
-	if primaryPart then
-		local existingAlignPosition: AlignPosition? =
-			primaryPart:FindFirstChildOfClass("AlignPosition") :: AlignPosition
-		if existingAlignPosition then
-			existingAlignPosition:Destroy()
-		end
+	if not lapskausModel.PrimaryPart then
+		warn("Lapskaus model does not have a PrimaryPart")
+		return
 	end
 
-	lapskausModel:PivotTo(CFrame.new(position + Vector3.new(0, 2, 0)))
-
-	for _, part: Instance in pairs(lapskausModel:GetDescendants()) do
-		if part:IsA("BasePart") then
-			part.CanCollide = true
-			part.Anchored = true
-		end
+	local primaryPart: MeshPart? = lapskausModel.PrimaryPart :: MeshPart
+	if not primaryPart then
+		warn("Lapskaus model does not have a PrimaryPart")
+		return
 	end
+
+	local alignPosition = primaryPart:FindFirstChild("LapskausAlignPosition") :: AlignPosition
+	if not alignPosition then
+		warn("LapskausAlignPosition not found in lapskaus model")
+		return
+	end
+
+	local HumanoidRootPart: Part? = character:FindFirstChild("HumanoidRootPart") :: Part
+	if not HumanoidRootPart then
+		warn("HumanoidRootPart not found in character")
+		return
+	end
+
+	local droppedLapskausLocation: Part = DroppedLapskausLocation:Clone()
+	droppedLapskausLocation.Parent = workspace
+	droppedLapskausLocation.Position = HumanoidRootPart.Position
+
+	local floorAttachment = Instance.new("Attachment")
+	floorAttachment.Name = "FloorAttachment"
+	floorAttachment.Parent = droppedLapskausLocation
+
+	alignPosition.Attachment1 = floorAttachment
 
 	local prompt: ProximityPrompt = Instance.new("ProximityPrompt")
 	prompt.ObjectText = team .. " Lapskaus"
@@ -92,29 +110,27 @@ local function createDroppedLapskaus(team: string, position: Vector3)
 	prompt.Triggered:Connect(function(player)
 		local success: any = RequestLapskaus:Invoke(player, team)
 		if success and droppedLapskaus[team] then
-			droppedLapskaus[team].lapskaus:Destroy()
+			ResetLapskaus:Fire(team)
 			droppedLapskaus[team] = nil
 		end
 	end)
 
-	droppedLapskaus[team] = { lapskaus = lapskausModel, team = team }
+	droppedLapskaus[team] = team
 
 	return lapskausModel
 end
 
 local function cleanupDroppedLapskaus(team: string)
-	if droppedLapskaus[team] and droppedLapskaus[team].lapskaus then
-		droppedLapskaus[team].lapskaus:Destroy()
+	if droppedLapskaus[team] then
+		ResetLapskaus:Fire(team)
 		droppedLapskaus[team] = nil
 	end
 end
 
 local function cleanupAllDroppedLapskaus()
-	for team: string, data: { lapskaus: Model, team: string } in pairs(droppedLapskaus) do
-		if data.lapskaus then
-			data.lapskaus:Destroy()
-		end
-		droppedLapskaus[team] = nil
+	for team, _ in pairs(droppedLapskaus) do
+		ResetLapskaus:Fire(team)
+		droppedLapskaus[team :: lapskausTeam] = nil
 	end
 	droppedLapskaus = {}
 end
@@ -229,7 +245,7 @@ function CaptureTheLapskaus.handleKill(killer: Player, victim: Player)
 			if character then
 				local rootPart: Instance? = character:FindFirstChild("HumanoidRootPart")
 				if rootPart and rootPart:IsA("BasePart") then
-					createDroppedLapskaus(team, rootPart.Position)
+					createDroppedLapskaus(team :: lapskausTeam, character)
 				end
 			end
 
