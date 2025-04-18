@@ -13,10 +13,11 @@ local root: Part = character:WaitForChild("HumanoidRootPart") :: Part
 local rootAttachment: Attachment = root:FindFirstChild("RootAttachment") :: Attachment
 local camera = Workspace.CurrentCamera :: Camera
 
-local viewmodel: Model = ReplicatedStorage:FindFirstChild("viewmodel"):Clone() :: Model
-local humanoidRootPart: Part = viewmodel:FindFirstChild("HumanoidRootPart") :: Part
-local rightArm: Part = viewmodel:FindFirstChild("RightArm") :: Part
-viewmodel.Parent = Workspace
+local rifle: Model = ReplicatedStorage.Assets.Lapskaus_Rifle:Clone()
+local rifleBasePart = rifle.PrimaryPart :: BasePart
+rifle.Parent = workspace
+
+local rifleOffset: CFrame = CFrame.new(2, -1, -3.5) * CFrame.Angles(0, math.rad(-5), 0)
 
 local linearVelocity = Instance.new("LinearVelocity", root) :: LinearVelocity
 linearVelocity.Attachment0 = rootAttachment
@@ -29,7 +30,7 @@ linearVelocity.MaxForce = MovementConfig.MaxForce
 local movementEnabled: boolean = true
 
 local function updateViewmodel(dt: number)
-	humanoidRootPart.CFrame = camera.CFrame
+	rifleBasePart.CFrame = camera.CFrame * rifleOffset
 end
 
 local function updateMovement(dt: number)
@@ -62,7 +63,7 @@ end
 
 function ClientController.handleDeath()
 	movementEnabled = false
-	viewmodel.Parent = nil
+	rifle.Parent = nil
 	camera.CameraType = Enum.CameraType.Scriptable
 	local thirdPersonOffset: CFrame = CFrame.new(0, 5, 24)
 	camera.CFrame = root.CFrame * thirdPersonOffset
@@ -71,7 +72,6 @@ end
 
 function ClientController.respawn()
 	movementEnabled = true
-	viewmodel.Parent = Workspace
 
 	camera.CameraType = Enum.CameraType.Custom
 	camera.CFrame = root.CFrame
