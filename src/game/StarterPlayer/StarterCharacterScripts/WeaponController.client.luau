@@ -3,6 +3,7 @@ local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
 local Players = game:GetService("Players")
+local ReloadFinished: RemoteEvent = ReplicatedStorage.Events:FindFirstChild("ReloadFinished") :: RemoteEvent
 
 -- local KillPlayer: RemoteEvent = ReplicatedStorage.Events.KillPlayer
 -- local RespawnPlayers: RemoteEvent = ReplicatedStorage.Events.RespawnPlayer
@@ -15,24 +16,26 @@ local FireEvent: RemoteEvent = ReplicatedStorage.Events.FireWeapon :: RemoteEven
 
 local canFire: boolean = true
 
+local viewmodel: Model = workspace:WaitForChild("viewmodel") :: Model
+local animationController: AnimationController =
+	viewmodel:FindFirstChildOfClass("AnimationController") :: AnimationController
+local rifle = viewmodel.PrimaryPart :: BasePart
+local animator: Animator = animationController:FindFirstChildOfClass("Animator") :: Animator
+local reload: Animation = viewmodel:FindFirstChild("Reload") :: Animation
+local animationTrack = animator:LoadAnimation(reload) :: AnimationTrack
+
 local function fire()
 	if not canFire then
 		return
 	end
 
-	local viewmodel: Model = workspace:FindFirstChild("viewmodel") :: Model
-	local arm: BasePart = viewmodel:FindFirstChild("RightArm") :: BasePart
-	local origin: Vector3 = arm.Position
-	local direction: Vector3 = (mouse.Hit.Position - origin).Unit
-	-- local humanoidRootPart: BasePart = character:FindFirstChild("HumanoidRootPart") :: BasePart
+	canFire = false
 
-	-- local linearVel: LinearVelocity? = humanoidRootPart:FindFirstChildOfClass("LinearVelocity")
-	-- if linearVel and direction.Y > -0.5 then
-	-- 	local horizontalDirection: Vector2 = -Vector2.new(direction.X, direction.Z).Unit
-	-- 	linearVel.PlaneVelocity = linearVel.PlaneVelocity + horizontalDirection * WeaponConfig.knockbackForce
-	-- end
+	local origin: Vector3 = rifle.Position
+	local direction: Vector3 = (mouse.Hit.Position - origin).Unit
 
 	FireEvent:FireServer(origin, direction)
+	animationTrack:Play()
 end
 
 UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
@@ -45,10 +48,6 @@ UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: 
 	end
 end)
 
--- KillPlayer.OnClientEvent:Connect(function()
--- 	canFire = false
--- end)
-
--- RespawnPlayers.OnClientEvent:Connect(function()
--- 	canFire = true
--- end)
+ReloadFinished.OnClientEvent:Connect(function()
+	canFire = true
+end)

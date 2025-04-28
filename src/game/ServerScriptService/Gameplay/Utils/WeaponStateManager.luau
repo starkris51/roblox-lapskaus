@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerKill = require(ServerScriptService.Gameplay.Utils.PlayerKill)
 local WeaponConfig = require(ReplicatedStorage.Config.WeaponConfig)
+local ReloadFinished: RemoteEvent = ReplicatedStorage.Events:FindFirstChild("ReloadFinished") :: RemoteEvent
 
 type ReloadState = {
 	isReloading: boolean,
@@ -27,6 +28,9 @@ local function reloadFinished(player: Player)
 	if WeaponStateManager.playerReloadState[player] then
 		print("reloadFinished")
 		WeaponStateManager.playerReloadState[player].isReloading = false
+		if ReloadFinished then
+			ReloadFinished:FireClient(player)
+		end
 	end
 end
 

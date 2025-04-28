@@ -16,6 +16,7 @@ local camera = Workspace.CurrentCamera :: Camera
 local rifle: Model = ReplicatedStorage.Assets.Lapskaus_Rifle:Clone()
 local rifleBasePart = rifle.PrimaryPart :: BasePart
 rifle.Parent = workspace
+rifle.Name = "viewmodel"
 
 local rifleOffset: CFrame = CFrame.new(2, -1, -3.5) * CFrame.Angles(0, math.rad(-5), 0)
 

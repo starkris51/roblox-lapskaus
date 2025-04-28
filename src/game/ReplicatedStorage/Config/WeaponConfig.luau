@@ -6,7 +6,7 @@ export type WeaponConfigType = {
 }
 
 local WeaponConfig: WeaponConfigType = {
-	reloadTime = 2.0,
+	reloadTime = 1.3,
 	range = 1000,
 	knockbackForce = 100,
 } :: WeaponConfigType

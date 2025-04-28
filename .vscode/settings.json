@@ -14,5 +14,6 @@
   "luau-lsp.completion.imports.suggestServices": true,
   "luau-lsp.completion.enableFragmentAutocomplete": true,
   "luau-lsp.completion.imports.suggestRequires": true,
-  "discord.enabled": true
+  "discord.enabled": true,
+  "stylua.targetReleaseVersion": "latest"
 }
